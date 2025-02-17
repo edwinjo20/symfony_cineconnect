@@ -1,6 +1,7 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
+    <img src="{{ asset('uploads/images/' ~ film.imagePath) }}" alt="{{ film.title }}" style="width:100%; max-height: 400px; object-fit: cover;">
     <h1>{{ film.title }}</h1>
     <p>{{ film.description }}</p>
     <p>Release Date: {{ film.releaseDate|date('Y-m-d') }}</p>
@@ -27,9 +28,9 @@
             <div id="comments-{{ review.id }}" style="display:none;">
                 <h4>Comments</h4>
                 {% for comment in review.comments %}
-                    {# Display only approved comments #}
                     {% if comment.approved %}
                         <div>
+                            {# Add user profile image if available #}
                             <p><strong>{{ comment.user.username }}</strong>: {{ comment.content }}</p>
                             <p><small>Posted on {{ comment.date|date('Y-m-d H:i') }}</small></p>
                         </div>

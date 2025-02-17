@@ -10,9 +10,9 @@
             <tr>
                 <th>Title</th>
                 <th>Description</th>
-                <th>ReleaseDate</th>
-                <th>ImagePath</th>
-                <th>actions</th>
+                <th>Release Date</th>
+                <th>Image</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -21,17 +21,30 @@
                 <td>{{ film.title }}</td>
                 <td>{{ film.description }}</td>
                 <td>{{ film.releaseDate ? film.releaseDate|date('Y-m-d') : '' }}</td>
-                <td>{{ film.imagePath }}</td>
+
+                {# Check if an image exists and display it as a thumbnail #}
                 <td>
-                    <a href="{{ path('app_film_show', {'id': film.id}) }}">show</a>
+                    {% if film.imagePath %}
+                        <img src="{{ asset('uploads/images/' ~ film.imagePath) }}" alt="{{ film.title }}" style="width: 50px; height: auto;">
+                    {% else %}
+                        No Image
+                    {% endif %}
+                </td>
+
+                <td>
+                    <a href="{{ path('app_film_show', {'id': film.id}) }}">Show</a>
                     {% if is_granted('ROLE_ADMIN') %}
-                    <a href="{{ path('admin_dashboard') }}">Edit</a>
+                        <a href="{{ path('admin_dashboard') }}">Edit</a> | 
+                        <form action="{{ path('admin_film_delete', {'id': film.id}) }}" method="POST" style="display:inline;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ film.id) }}">
+                            <button type="submit">Delete</button>
+                        </form>
                     {% endif %}
                 </td>
             </tr>
         {% else %}
             <tr>
-                <td colspan="6">no records found</td>
+                <td colspan="5">No films found</td>
             </tr>
         {% endfor %}
         </tbody>

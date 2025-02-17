@@ -9,6 +9,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 
 class FilmType extends AbstractType
 {
@@ -31,20 +32,21 @@ class FilmType extends AbstractType
                     new Assert\NotBlank(['message' => 'Release date is required.'])
                 ]
             ])
-            ->add('imagePath')
+            ->add('imagePath', FileType::class, [
+                'label' => 'Film Image (JPEG or PNG)',
+                'mapped' => false, // Not mapped to the entity
+                'required' => false,
+                'constraints' => [
+                    new Assert\Image([
+                        'maxSize' => '5M',
+                        'mimeTypes' => ['image/jpeg', 'image/png']
+                    ])
+                ]
+            ])
             ->add('genre', EntityType::class, [
                 'class' => Genre::class,
                 'choice_label' => 'name',
                 'placeholder' => 'Choose a genre',
             ]);
-    }
-
-    public function configureOptions(OptionsResolver $resolver): void
-    {
-        $resolver->setDefaults([
-            'data_class' => Film::class,
-            'csrf_protection' => true,
-            'csrf_token_id' => 'film_form',
-        ]);
     }
 }

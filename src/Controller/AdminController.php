@@ -10,8 +10,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 #[Route('/admin')]
 final class AdminController extends AbstractController
@@ -39,8 +39,18 @@ final class AdminController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $file = $form->get('imagePath')->getData();
+            if ($file) {
+                $newFilename = uniqid() . '.' . $file->guessExtension();
+                $file->move(
+                    $this->getParameter('images_directory'), // Store in the `public/uploads/images` folder
+                    $newFilename
+                );
+                $film->setImagePath($newFilename); // Set the image path
+            }
+
             $entityManager->persist($film);
-            $entityManager->flush();            
+            $entityManager->flush();
             return $this->redirectToRoute('admin_dashboard');
         }
 
@@ -58,10 +68,20 @@ final class AdminController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $file = $form->get('imagePath')->getData();
+            if ($file) {
+                $newFilename = uniqid() . '.' . $file->guessExtension();
+                $file->move(
+                    $this->getParameter('images_directory'), // Store in the `public/uploads/images` folder
+                    $newFilename
+                );
+                $film->setImagePath($newFilename); // Update the image path
+            }
+
             $entityManager->flush(); // This will update the existing film
-            return $this->redirectToRoute('admin_dashboard'); // Redirect after saving
+            return $this->redirectToRoute('admin_dashboard');
         }
-        
+
         return $this->render('film/edit.html.twig', [
             'film' => $film,
             'form' => $form->createView(),
