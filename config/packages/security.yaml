@@ -1,0 +1,38 @@
+security:
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email  # Ensure this matches the field used for login (e.g., email or username)
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        main:
+            lazy: true
+            provider: app_user_provider
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                enable_csrf: true
+                default_target_path: app_film_index  # Redirect after successful login
+                csrf_token_id: authenticate  # Ensure this matches the token ID in the form
+            logout:
+                path: app_logout
+                target: app_login  # Redirect after logout
+            remember_me:
+                secret: '%env(APP_SECRET)%'  # Reference th e APP_SECRET from .env
+                lifetime: 604800  # 7 days
+                path: /
+            custom_authenticators:
+                - App\Security\LoginFormAuthenticator  # Use custom_authenticators (plural)
+            entry_point: App\Security\LoginFormAuthenticator  # Set the entry point
+
+    access_control:
+        - { path: ^/admin, roles: ROLE_ADMIN }  # Only admins can access /admin
+        - { path: ^/profile, roles: IS_AUTHENTICATED_FULLY }  # Only logged-in users can access /profile

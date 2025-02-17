@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Create New Film{% endblock %}
+
+{% block body %}
+    <h1>Create New Film</h1>
+{{ form_start(form, { 'method': 'POST' }) }}
+    {{ form_row(form.title) }}
+    {{ form_row(form.description) }}
+    {{ form_row(form.releaseDate) }}
+    {{ form_row(form.imagePath) }}
+    {{ form_row(form.genre) }}
+    <button type="submit">Create Film</button>
+{{ form_end(form) }}
+
+
+{% if form.vars.errors %}
+    <div class="form-errors">
+        {% for error in form.vars.errors %}
+            <div class="error">{{ error.message }}</div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+{% endblock %}

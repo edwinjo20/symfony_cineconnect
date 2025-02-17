@@ -1,0 +1,69 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block body %}
+    <h1>Admin Dashboard</h1>
+
+    <h2>Films</h2>
+    <a href="{{ path('admin_film_new') }}">Create New Film</a>
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Release Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for film in films %}
+                <tr>
+                    <td>{{ film.title }}</td>
+                    <td>{{ film.description }}</td>
+                    <td>{{ film.releaseDate|date('Y-m-d') }}</td>
+                    <td>
+                        <a href="{{ path('admin_film_edit', {'id': film.id}) }}">Edit</a> | 
+                        <form action="{{ path('admin_film_delete', {'id': film.id}) }}" method="POST" style="display:inline;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ film.id) }}">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="4">No films found</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Unapproved Comments</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Film</th>
+                <th>Comment</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for comment in comments %}
+                <tr>
+                    <td>{{ comment.getFilm().title }}</td>
+                    <td>{{ comment.content }}</td>
+                    <td>
+                        <form action="{{ path('admin_comment_approve', {'id': comment.id}) }}" method="POST">
+                            <button type="submit">Approve</button>
+                        </form>
+                        <a href="{{ path('admin_comment_delete', {'id': comment.id}) }}">Delete</a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="3">No unapproved comments found</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
