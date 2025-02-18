@@ -4,8 +4,7 @@ pipeline {
     environment {
         GIT_REPO = "https://github.com/edwinjo20/symfony_cineconnect.git" // Replace with your repo
         GIT_BRANCH = "main"
-        DEPLOY_DIR = "web022" // Adjust to your server path
-        DB_NAME = "cinemacineconnect" // Your actual database name
+        DEPLOY_DIR = "symfony_app" // Adjust to your server path
     }
 
     stages {
@@ -53,7 +52,6 @@ pipeline {
                 dir("${DEPLOY_DIR}") {
                     sh 'php bin/console cache:clear --env=prod'
                     sh 'php bin/console cache:warmup --env=prod'
-                    sh 'chmod -R 775 var'
                 }
             }
         }
