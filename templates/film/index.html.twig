@@ -1,53 +1,41 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Film index{% endblock %}
+{% block title %}Film Index{% endblock %}
 
 {% block body %}
-    <h1>Film Page</h1>
+<div class="container mt-5">
+    <h1 class="text-center mb-4 text-light">Film Page</h1>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Description</th>
-                <th>Release Date</th>
-                <th>Image</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
+    <div class="row row-cols-1 row-cols-md-4 g-4">
         {% for film in films %}
-            <tr>
-                <td>{{ film.title }}</td>
-                <td>{{ film.description }}</td>
-                <td>{{ film.releaseDate ? film.releaseDate|date('Y-m-d') : '' }}</td>
+            <div class="col">
+                <div class="card movie-card shadow-lg">
+                    <img src="{{ asset('uploads/images/' ~ film.imagePath) }}" class="card-img-top" alt="{{ film.title }}">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-light">{{ film.title }}</h5>
+                        <p class="card-text ">{{ film.genre.name }}</p>
+                            <div class="rating mb-2">
+                                {% set avgRating = film.getAverageRating() %}
+                                {% for i in 1..5 %}
+                                    {% if i <= avgRating %}
+                                        <i class="fas fa-star text-warning"></i>
+                                    {% elseif i - 0.5 <= avgRating %}
+                                        <i class="fas fa-star-half-alt text-warning"></i>
+                                    {% else %}
+                                        <i class="far fa-star text-warning"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
 
-                {# Check if an image exists and display it as a thumbnail #}
-                <td>
-                    {% if film.imagePath %}
-                        <img src="{{ asset('uploads/images/' ~ film.imagePath) }}" alt="{{ film.title }}" style="width: 50px; height: auto;">
-                    {% else %}
-                        No Image
-                    {% endif %}
-                </td>
-
-                <td>
-                    <a href="{{ path('app_film_show', {'id': film.id}) }}">Show</a>
-                    {% if is_granted('ROLE_ADMIN') %}
-                        <a href="{{ path('admin_dashboard') }}">Edit</a> | 
-                        {# <form action="{{ path('admin_film_delete', {'id': film.id}) }}" method="POST" style="display:inline;">
-                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ film.id) }}">
-                            <button type="submit">Delete</button>
-                        </form> #}
-                    {% endif %}
-                </td>
-            </tr>
+                        <a href="{{ path('app_film_show', {'id': film.id}) }}" class="btn btn-dark rounded-pill px-4">More</a>
+                    </div>
+                </div>
+            </div>
         {% else %}
-            <tr>
-                <td colspan="5">No films found</td>
-            </tr>
+            <div class="col">
+                <p class="text-center text-light">No films found</p>
+            </div>
         {% endfor %}
-        </tbody>
-    </table>
-
+    </div>
+</div>
 {% endblock %}

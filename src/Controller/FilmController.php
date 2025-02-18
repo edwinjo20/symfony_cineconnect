@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/film')]
 final class FilmController extends AbstractController
 {
-    // View all films
+    // 📌 **View all films**
     #[Route('/', name: 'app_film_index', methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager): Response
     {
@@ -23,55 +23,65 @@ final class FilmController extends AbstractController
         return $this->render('film/index.html.twig', ['films' => $films]);
     }
 
-    // Show film details (and allow reviews/comments)
+    // 📌 **Show film details + allow reviews & comments**
     #[Route('/{id}', name: 'app_film_show', methods: ['GET', 'POST'])]
     public function show(Film $film, Request $request, EntityManagerInterface $entityManager): Response
     {
-        // Handle new review form
+        // ✅ **Handle Review Form**
         $reviewForm = $this->createForm(ReviewType::class, new Review());
         $reviewForm->handleRequest($request);
-    
+
         if ($reviewForm->isSubmitted() && $reviewForm->isValid()) {
-            // Ensure the logged-in user is associated with the review
             $review = $reviewForm->getData();
-            $review->setUser($this->getUser()); // Set the current user as the review author
+            $review->setUser($this->getUser());
             $review->setFilm($film);
-            $review->setPublicationDate(new \DateTime()); // Add publication date
-    
+            $review->setPublicationDate(new \DateTime());
+
             $entityManager->persist($review);
             $entityManager->flush();
-    
-            // Redirect to the same page after saving the review
+
             return $this->redirectToRoute('app_film_show', ['id' => $film->getId()]);
         }
-    
-        // Handle comment forms for each review
+
+        // ✅ **Prepare Comment Forms for Each Review**
         $commentForms = [];
         foreach ($film->getReviews() as $review) {
-            $comment = new Comment();
-            $commentForm = $this->createForm(CommentType::class, $comment);
-            $commentForm->handleRequest($request);
-    
-            if ($commentForm->isSubmitted() && $commentForm->isValid()) {
-                // Ensure the user is logged in before saving the comment
-                if (!$this->getUser()) {
-                    return $this->redirectToRoute('app_login'); // Redirect to login if not logged in
-                }
-    
-                // Set the user, date, and review before saving the comment
-                $comment->setUser($this->getUser());
-                $comment->setDate(new \DateTime());
-                $comment->setReview($review);
-    
-                $entityManager->persist($comment);
-                $entityManager->flush();
-    
-                return $this->redirectToRoute('app_film_show', ['id' => $film->getId()]);
-            }
-    
+            $commentForm = $this->createForm(CommentType::class);
             $commentForms[$review->getId()] = $commentForm->createView();
         }
-    
+
+        // ✅ **Handle Comment Submission**
+        if ($request->isMethod('POST') && $request->request->has('review_id')) {
+            $reviewId = $request->request->get('review_id');
+            $review = $entityManager->getRepository(Review::class)->find($reviewId);
+
+            if (!$review) {
+                throw $this->createNotFoundException('Review not found.');
+            }
+
+            // 🔍 **Get comment content & validate**
+            $content = trim($request->request->get('content'));
+
+            if (empty($content)) {
+                $this->addFlash('error', 'Comment cannot be empty.');
+                return $this->redirectToRoute('app_film_show', ['id' => $film->getId()]);
+            }
+
+            // ✅ **Save Comment**
+            $comment = new Comment();
+            $comment->setContent($content);
+            $comment->setUser($this->getUser());
+            $comment->setDate(new \DateTime());
+            $comment->setReview($review);
+            $comment->setApproved(false); // Admin approval needed
+
+            $entityManager->persist($comment);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Comment submitted for approval.');
+            return $this->redirectToRoute('app_film_show', ['id' => $film->getId()]);
+        }
+
         return $this->render('film/show.html.twig', [
             'film' => $film,
             'reviews' => $film->getReviews(),
@@ -79,6 +89,4 @@ final class FilmController extends AbstractController
             'reviewForm' => $reviewForm->createView(),
         ]);
     }
-    
-    
 }

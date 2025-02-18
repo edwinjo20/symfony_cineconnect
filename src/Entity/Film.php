@@ -178,4 +178,18 @@ class Film
 
         return $this;
     }
+        public function getAverageRating(): float
+    {
+        if ($this->reviews->count() === 0) {
+            return 0; // Default rating if no reviews exist
+        }
+
+        $total = 0;
+        foreach ($this->reviews as $review) {
+            $total += $review->getRatingGiven();
+        }
+
+        return round($total / $this->reviews->count(), 1);
+    }
+
 }

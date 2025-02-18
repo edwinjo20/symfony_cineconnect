@@ -1,4 +1,8 @@
-{{ form_start(form) }}
+{{ form_start(form, { 'attr': {'novalidate': 'novalidate'} }) }}
     {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+
+    <!-- Explicitly add CSRF token (if missing) -->
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token('genre_form') }}">
+
+    <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
 {{ form_end(form) }}

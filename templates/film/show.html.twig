@@ -1,70 +1,98 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    <img src="{{ asset('uploads/images/' ~ film.imagePath) }}" alt="{{ film.title }}" style="width:100%; max-height: 400px; object-fit: cover;">
-    <h1>{{ film.title }}</h1>
-    <p>{{ film.description }}</p>
-    <p>Release Date: {{ film.releaseDate|date('Y-m-d') }}</p>
-    <p>Genre: {{ film.genre.name }}</p>
+<div class="container mt-5">
+    <!-- Film Image -->
+    <div class="card shadow-lg">
+        <img src="{{ asset('uploads/images/' ~ film.imagePath) }}" alt="{{ film.title }}" class="card-img-top" style="max-height: 400px; object-fit: cover;">
+        <div class="card-body">
+            <h1 class="card-title text-center">{{ film.title }}</h1>
+            <p class="card-text">{{ film.description }}</p>
+            <p><strong>Release Date:</strong> {{ film.releaseDate|date('Y-m-d') }}</p>
+            <p><strong>Genre:</strong> {{ film.genre.name }}</p>
+        </div>
+    </div>
 
-    <h2>Reviews</h2>
-    {% for review in reviews %}
-        <div>
-            <p>{{ review.user.username }} - Rating: {{ review.ratingGiven }}/10</p>
-            <p>{{ review.content }}</p>
-            <p><small>Posted on {{ review.publicationDate|date('Y-m-d H:i') }}</small></p>
+    <!-- Reviews Section -->
+    <div class="mt-4">
+        <h2>Reviews</h2>
+{% for review in reviews %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">{{ review.user.username }} - <span class="text-warning">⭐ {{ review.ratingGiven }}/10</span></h5>
+            <p class="card-text">{{ review.content }}</p>
+            <p class="text-muted"><small>Posted on {{ review.publicationDate|date('Y-m-d H:i') }}</small></p>
 
-            {# Edit and Delete Buttons for Review #}
-            {% if review.user == app.user or is_granted('ROLE_ADMIN') %}
-                <a href="{{ path('app_review_edit', {'id': review.id}) }}">Edit</a> |
-                <form action="{{ path('app_review_delete', {'id': review.id}) }}" method="POST" style="display:inline;">
-                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ review.id) }}">
-                    <button type="submit">Delete</button>
-                </form>
-            {% endif %}
-
-            {# Comments Section - Show/Hide Comments for Each Review #}
-            <button onclick="toggleComments({{ review.id }})">See All Comments</button>
-            <div id="comments-{{ review.id }}" style="display:none;">
-                <h4>Comments</h4>
+            <!-- See Comments -->
+            <button class="btn btn-sm btn-secondary mt-2" onclick="toggleComments({{ review.id }})">See All Comments</button>
+            <!-- Comments Section -->
+            <div id="comments-{{ review.id }}" class="mt-3" style="display:none;">
+                <h5>Comments</h5>
                 {% for comment in review.comments %}
                     {% if comment.approved %}
-                        <div>
-                            {# Add user profile image if available #}
+                        <div class="alert alert-light border">
                             <p><strong>{{ comment.user.username }}</strong>: {{ comment.content }}</p>
-                            <p><small>Posted on {{ comment.date|date('Y-m-d H:i') }}</small></p>
+                            <p class="text-muted"><small>Posted on {{ comment.date|date('Y-m-d H:i') }}</small></p>
                         </div>
                     {% endif %}
                 {% endfor %}
             </div>
-            <br>
 
-            {# For each review, render the corresponding comment form #}
-            {% if app.user %}
-                <button onclick="document.getElementById('comment-form-{{ review.id }}').style.display='block'">Add Comment</button>
-                <div id="comment-form-{{ review.id }}" style="display:none;">
-                    <h5>Leave a Comment</h5>
-                    {{ form_start(commentForms[review.id]) }}
-                    {{ form_row(commentForms[review.id].content) }}
-                    <button type="submit">Submit Comment</button>
-                    {{ form_end(commentForms[review.id]) }}
-                </div>
-            {% else %}
-                <p>You need to be logged in to leave a comment.</p>
-            {% endif %}
+
+        <!-- Add Comment Form -->
+        {% if app.user %}
+            <button class="btn btn-sm btn-outline-dark mt-2" onclick="document.getElementById('comment-form-{{ review.id }}').style.display='block'">
+                Add Comment
+            </button>
+            <div id="comment-form-{{ review.id }}" class="mt-2" style="display:none;">
+                <h5>Leave a Comment</h5>
+                <form action="{{ path('app_film_show', {'id': film.id}) }}" method="POST">
+                    <input type="hidden" name="review_id" value="{{ review.id }}">
+                    <div class="mb-3">
+                        <textarea name="content" class="form-control" rows="3" required></textarea> {# ✅ Ensure name="content" exists #}
+                    </div>
+                    <button type="submit" class="btn btn-success">Submit Comment</button>
+                </form>
+
+            </div>
+        {% else %}
+            <p class="text-muted">You need to be logged in to leave a comment.</p>
+        {% endif %}
+
+
         </div>
-    {% endfor %}
+    </div>
+{% endfor %}
 
-    <h3>Add a Review</h3>
-    {% if app.user %}
-        {{ form_start(reviewForm) }}
-        {{ form_row(reviewForm.content) }}
-        {{ form_row(reviewForm.ratingGiven) }}
-        <button type="submit">Submit Review</button>
-        {{ form_end(reviewForm) }}
-    {% else %}
-        <p>You need to be logged in to leave a review. <a href="{{ path('app_login') }}">Login here</a>.</p>
-    {% endif %}
+    </div>
+
+    <!-- Add a Review -->
+    <div class="mt-5">
+        <h3>Add a Review</h3>
+        {% if app.user %}
+            <div class="card p-3">
+                {{ form_start(reviewForm) }}
+                <div class="mb-3">
+                    {{ form_label(reviewForm.content, 'Your Review:', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(reviewForm.content, {'attr': {'class': 'form-control'}}) }}
+                </div>
+                <div class="mb-3">
+                    {{ form_label(reviewForm.ratingGiven, 'Rating:', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(reviewForm.ratingGiven, {'attr': {'class': 'form-control'}}) }}
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Review</button>
+                {{ form_end(reviewForm) }}
+            </div>
+        {% else %}
+            <p class="text-muted">You need to be logged in to leave a review. <a href="{{ path('app_login') }}">Login here</a>.</p>
+        {% endif %}
+    </div>
+
+    <!-- Back to List Button -->
+    <div class="mt-4">
+        <a href="{{ path('app_film_index') }}" class="btn btn-outline-secondary">Back to List</a>
+    </div>
+</div>
 
 <script>
     function toggleComments(reviewId) {

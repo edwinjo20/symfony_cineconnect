@@ -1,25 +1,59 @@
-{% extends 'base.html.twig' %}
+{% extends 'base.html.twig' %} 
 
 {% block title %}Create New Film{% endblock %}
 
 {% block body %}
-    <h1>Create New Film</h1>
-{{ form_start(form, { 'method': 'POST' }) }}
-    {{ form_row(form.title) }}
-    {{ form_row(form.description) }}
-    {{ form_row(form.releaseDate) }}
-    {{ form_row(form.imagePath) }}
-    {{ form_row(form.genre) }}
-    <button type="submit">Create Film</button>
-{{ form_end(form) }}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg p-4">
+                <h2 class="text-center text-primary mb-4">Create New Film</h2>
 
+                {{ form_start(form, { 'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'} }) }}
 
-{% if form.vars.errors %}
-    <div class="form-errors">
-        {% for error in form.vars.errors %}
-            <div class="error">{{ error.message }}</div>
-        {% endfor %}
+                    <div class="mb-3">
+                        {{ form_label(form.title, 'Film Title', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.title) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 4}}) }}
+                        {{ form_errors(form.description) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.releaseDate, 'Release Date', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.releaseDate, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.releaseDate) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.imagePath, 'Film Image', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.imagePath, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.imagePath) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.genre, 'Genre', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.genre, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.genre) }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Create Film</button>
+
+                {{ form_end(form) }}
+
+                {% if form.vars.errors %}
+                    <div class="alert alert-danger mt-3">
+                        {% for error in form.vars.errors %}
+                            <div>{{ error.message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
     </div>
-{% endif %}
-
+</div>
 {% endblock %}
