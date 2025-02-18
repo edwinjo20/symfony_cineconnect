@@ -36,7 +36,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $roles = [];
 
     #[ORM\Column]
-    private bool $isVerified = True;
+    private bool $isVerified = true;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Review::class)]
     private Collection $reviews;

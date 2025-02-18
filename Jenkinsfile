@@ -2,16 +2,20 @@ pipeline {
     agent any
 
     environment {
-        GIT_REPO = "https://github.com/edwinjo20/symfony_cineconnect.git" // Replace with your repo
+        GIT_REPO = "https://github.com/edwinjo20/symfony_cineconnect.git"
         GIT_BRANCH = "main"
-        DEPLOY_DIR = "symfony_app" // Adjust to your server path
+        DEPLOY_DIR = "symfony_app"
+        DB_HOST = "mysql"  // Change if MySQL is running elsewhere
+        DB_NAME = "cinemacineconnect"
+        DB_USER = "root"
+        DB_PASS = "" // Change if your MySQL requires a password
     }
 
     stages {
         stage('Clone Repository') {
             steps {
                 script {
-                    sh "rm -rf ${DEPLOY_DIR}" // Deletes old deployment folder
+                    sh "rm -rf ${DEPLOY_DIR}"
                     sh "git clone -b ${GIT_BRANCH} ${GIT_REPO} ${DEPLOY_DIR}"
                 }
             }
@@ -31,7 +35,7 @@ pipeline {
                     def envLocal = """
                     APP_ENV=prod
                     APP_DEBUG=0
-                    DATABASE_URL=mysql://root:@127.0.0.1:3306/${DB_NAME}?serverVersion=8.0&charset=utf8mb4
+                    DATABASE_URL=mysql://${DB_USER}:${DB_PASS}@${DB_HOST}:3306/${DB_NAME}?serverVersion=8.0&charset=utf8mb4
                     """
                     writeFile file: "${DEPLOY_DIR}/.env.local", text: envLocal
                 }
@@ -41,8 +45,8 @@ pipeline {
         stage('Migrate Database') {
             steps {
                 dir("${DEPLOY_DIR}") {
-                    sh 'php bin/console doctrine:database:create --if-not-exists'
-                    sh 'php bin/console doctrine:migrations:migrate --no-interaction --env=prod'
+                    sh 'php bin/console doctrine:database:create --if-not-exists || true'
+                    sh 'php bin/console doctrine:migrations:migrate --no-interaction --env=prod || true'
                 }
             }
         }
@@ -50,8 +54,10 @@ pipeline {
         stage('Clear Cache & Set Permissions') {
             steps {
                 dir("${DEPLOY_DIR}") {
-                    sh 'php bin/console cache:clear --env=prod'
-                    sh 'php bin/console cache:warmup --env=prod'
+                    sh 'rm -rf var/cache/*'  // Manually clear cache before running Symfony commands
+                    sh 'APP_ENV=prod php bin/console cache:clear --no-debug || true'
+                    sh 'APP_ENV=prod php bin/console cache:warmup || true'
+                    sh 'chmod -R 775 var/'
                 }
             }
         }
@@ -59,8 +65,8 @@ pipeline {
         stage('Deploy to Server') {
             steps {
                 script {
-                    sh "rm -rf /var/www/html/${DEPLOY_DIR}/*" // Deletes old deployment folder
-                    sh "cp -r ${DEPLOY_DIR}/* /var/www/html/${DEPLOY_DIR}"
+                    sh "mkdir -p /var/www/html/${DEPLOY_DIR}"
+                    sh "rsync -av --delete ${DEPLOY_DIR}/ /var/www/html/${DEPLOY_DIR}/"
                     sh "chmod -R 775 /var/www/html/${DEPLOY_DIR}/var"
                 }
             }
