@@ -2,106 +2,122 @@
 
 {% block body %}
 <div class="container mt-5">
-    <!-- Film Image -->
+    <!-- 🎬 Film Details -->
     <div class="card shadow-lg">
-        <img src="{{ asset('uploads/images/' ~ film.imagePath) }}" alt="{{ film.title }}" class="card-img-top" style="max-height: 400px; object-fit: cover;">
+        <img src="{{ asset('uploads/images/' ~ film.imagePath) }}" 
+             alt="{{ film.title }}" 
+             class="card-img-top" 
+             style="max-height: 400px; object-fit: cover;">
         <div class="card-body">
             <h1 class="card-title text-center">{{ film.title }}</h1>
-            <p class="card-text">{{ film.description }}</p>
+            <p class="card-text text-secondary">{{ film.description }}</p>
             <p><strong>Release Date:</strong> {{ film.releaseDate|date('Y-m-d') }}</p>
             <p><strong>Genre:</strong> {{ film.genre.name }}</p>
         </div>
     </div>
 
-    <!-- Reviews Section -->
+    <!-- ⭐ Reviews Section -->
     <div class="mt-4">
-        <h2>Reviews</h2>
-{% for review in reviews %}
-    <div class="card mb-3">
-        <div class="card-body">
-            <h5 class="card-title">{{ review.user.username }} - <span class="text-warning">⭐ {{ review.ratingGiven }}/10</span></h5>
-            <p class="card-text">{{ review.content }}</p>
-            <p class="text-muted"><small>Posted on {{ review.publicationDate|date('Y-m-d H:i') }}</small></p>
+        <h4 style="color:rgb(162, 180, 199);">Reviews</h4>
 
-            <!-- See Comments -->
-            <button class="btn btn-sm btn-secondary mt-2" onclick="toggleComments({{ review.id }})">See All Comments</button>
-            <!-- Comments Section -->
-            <div id="comments-{{ review.id }}" class="mt-3" style="display:none;">
-                <h5>Comments</h5>
-                {% for comment in review.comments %}
-                    {% if comment.approved %}
-                        <div class="alert alert-light border">
-                            <p><strong>{{ comment.user.username }}</strong>: {{ comment.content }}</p>
-                            <p class="text-muted"><small>Posted on {{ comment.date|date('Y-m-d H:i') }}</small></p>
-                        </div>
-                    {% endif %}
-                {% endfor %}
-            </div>
+        {% for review in reviews %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {{ review.user.username }} - 
+                        <span class="text-warning">⭐ {{ review.ratingGiven }}/10</span>
+                    </h5>
+                    <p class="card-text">{{ review.content }}</p>
+                    <p class="text-muted">
+                        <small>Posted on {{ review.publicationDate|date('Y-m-d H:i') }}</small>
+                    </p>
 
+                    <!-- 🔽 Toggle Comments Button -->
+                    <button class="btn btn-sm btn-secondary mt-2" 
+                            onclick="toggleComments({{ review.id }})">
+                        See All Comments
+                    </button>
 
-        <!-- Add Comment Form -->
-        {% if app.user %}
-            <button class="btn btn-sm btn-outline-dark mt-2" onclick="document.getElementById('comment-form-{{ review.id }}').style.display='block'">
-                Add Comment
-            </button>
-            <div id="comment-form-{{ review.id }}" class="mt-2" style="display:none;">
-                <h5>Leave a Comment</h5>
-                <form action="{{ path('app_film_show', {'id': film.id}) }}" method="POST">
-                    <input type="hidden" name="review_id" value="{{ review.id }}">
-                    <div class="mb-3">
-                        <textarea name="content" class="form-control" rows="3" required></textarea> {# ✅ Ensure name="content" exists #}
+                    <!-- 💬 Comments Section -->
+                    <div id="comments-{{ review.id }}" class="mt-3" style="display:none;">
+                        <h5>Comments</h5>
+                        {% for comment in review.comments %}
+                            {% if comment.approved %}
+                                <div class="alert alert-light border">
+                                    <p><strong>{{ comment.user.username }}</strong>: {{ comment.content }}</p>
+                                    <p class="text-muted">
+                                        <small>Posted on {{ comment.date|date('Y-m-d H:i') }}</small>
+                                    </p>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
                     </div>
-                    <button type="submit" class="btn btn-success">Submit Comment</button>
-                </form>
 
+                    <!-- 📝 Add a Comment Form -->
+                    {% if app.user %}
+                        <button class="btn btn-sm btn-outline-dark mt-2" 
+                                onclick="document.getElementById('comment-form-{{ review.id }}').style.display='block'">
+                            Add Comment
+                        </button>
+
+                        <div id="comment-form-{{ review.id }}" class="mt-2" style="display:none;">
+                            <h5>Leave a Comment</h5>
+                            <form action="{{ path('app_film_show', {'id': film.id}) }}" method="POST">
+                                <input type="hidden" name="review_id" value="{{ review.id }}">
+                                <div class="mb-3">
+                                    <textarea name="content" class="form-control" rows="3" required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-success">Submit Comment</button>
+                            </form>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">You need to be logged in to leave a comment.</p>
+                    {% endif %}
+                </div>
             </div>
-        {% else %}
-            <p class="text-muted">You need to be logged in to leave a comment.</p>
-        {% endif %}
-
-
-        </div>
-    </div>
-{% endfor %}
-
+        {% endfor %}
     </div>
 
-    <!-- Add a Review -->
+    <!-- 📝 Add a Review Section -->
     <div class="mt-5">
-        <h3>Add a Review</h3>
+        <h4 style="color:rgb(162, 180, 199);">Add Reviews</h4>
+
         {% if app.user %}
             <div class="card p-3">
                 {{ form_start(reviewForm) }}
+
                 <div class="mb-3">
                     {{ form_label(reviewForm.content, 'Your Review:', {'label_attr': {'class': 'form-label'}}) }}
                     {{ form_widget(reviewForm.content, {'attr': {'class': 'form-control'}}) }}
                 </div>
+
                 <div class="mb-3">
                     {{ form_label(reviewForm.ratingGiven, 'Rating:', {'label_attr': {'class': 'form-label'}}) }}
                     {{ form_widget(reviewForm.ratingGiven, {'attr': {'class': 'form-control'}}) }}
                 </div>
+
                 <button type="submit" class="btn btn-primary">Submit Review</button>
                 {{ form_end(reviewForm) }}
             </div>
         {% else %}
-            <p class="text-muted">You need to be logged in to leave a review. <a href="{{ path('app_login') }}">Login here</a>.</p>
+            <p class="text-muted">
+                You need to be logged in to leave a review. 
+                <a href="{{ path('app_login') }}">Login here</a>.
+            </p>
         {% endif %}
     </div>
 
-    <!-- Back to List Button -->
+    <!-- 🔙 Back to List Button -->
     <div class="mt-4">
         <a href="{{ path('app_film_index') }}" class="btn btn-outline-secondary">Back to List</a>
     </div>
 </div>
 
+<!-- 🔄 JavaScript for Toggling Comments -->
 <script>
     function toggleComments(reviewId) {
         var commentsDiv = document.getElementById('comments-' + reviewId);
-        if (commentsDiv.style.display === "none") {
-            commentsDiv.style.display = "block";
-        } else {
-            commentsDiv.style.display = "none";
-        }
+        commentsDiv.style.display = commentsDiv.style.display === "none" ? "block" : "none";
     }
 </script>
 

@@ -3,16 +3,20 @@
 {% block title %}CineConnect - Home{% endblock %}
 
 {% block body %}
+
 <!-- 🔄 Full-Width Carousel for Latest 4 Films -->
-<div id="homeCarousel" class="carousel slide mb-5" data-bs-ride="carousel" data-bs-interval="2000">
+<div id="homeCarousel" class="carousel slide mb-5" data-bs-ride="carousel" data-bs-interval="1700">
     <div class="carousel-inner">
         {% for film in latestFilms %}
             <div class="carousel-item {% if loop.first %}active{% endif %}">
-                <img src="{{ asset('uploads/images/' ~ film.imagePath) }}" class="d-block w-100" style="height: 500px; object-fit: cover;" alt="{{ film.title }}">
+                <img src="{{ asset('uploads/images/' ~ film.imagePath) }}" 
+                     class="d-block w-100" 
+                     style="height: 500px; object-fit: cover;" 
+                     alt="{{ film.title }}">
+
                 <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 p-3 rounded">
                     <h5>{{ film.title }}</h5>
-                    <p>{{ film.description|length > 100 ? film.description|slice(0, 100) ~ '...' : film.description }}</p>
-                    <a href="{{ path('app_film_show', {'id': film.id}) }}" class="btn btn-primary">View Details</a>
+                    <a href="{{ path('app_film_show', {'id': film.id}) }}" class="btn btn-outline-light text-white">View Details</a>
                 </div>
             </div>
         {% endfor %}
@@ -32,16 +36,20 @@
 <div class="container mt-5">
     <h2 class="mb-4 text-center text-light">Latest Films</h2>
 
-    <div class="row row-cols-1 row-cols-md-4 g-4">  {# ✅ Fixing grid issue #}
+    <div class="row row-cols-1 row-cols-md-4 g-4">
         {% for film in latestFilms %}
             <div class="col">
                 <div class="card movie-card shadow-lg">
-                    <img src="{{ asset('uploads/images/' ~ film.imagePath) }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="{{ film.title }}">
+                    <img src="{{ asset('uploads/images/' ~ film.imagePath) }}" 
+                         class="card-img-top" 
+                         style="height: 200px; object-fit: cover;" 
+                         alt="{{ film.title }}">
+
                     <div class="card-body text-center">
                         <h5 class="card-title text-light">{{ film.title }}</h5>
                         <p class="card-text text-light">{{ film.genre.name }}</p>
 
-                        <!-- ⭐ Star Rating (Added from film page) -->
+                        <!-- ⭐ Star Rating -->
                         <div class="rating mb-2">
                             {% set avgRating = film.getAverageRating() %}
                             {% for i in 1..5 %}
@@ -62,4 +70,5 @@
         {% endfor %}
     </div>
 </div>
+
 {% endblock %}

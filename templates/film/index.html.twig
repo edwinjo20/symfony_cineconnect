@@ -10,22 +10,27 @@
         {% for film in films %}
             <div class="col">
                 <div class="card movie-card shadow-lg">
-                    <img src="{{ asset('uploads/images/' ~ film.imagePath) }}" class="card-img-top" alt="{{ film.title }}">
+                    <img src="{{ asset('uploads/images/' ~ film.imagePath) }}" 
+                         class="card-img-top" 
+                         alt="{{ film.title }}">
+
                     <div class="card-body text-center">
                         <h5 class="card-title text-light">{{ film.title }}</h5>
-                        <p class="card-text ">{{ film.genre.name }}</p>
-                            <div class="rating mb-2">
-                                {% set avgRating = film.getAverageRating() %}
-                                {% for i in 1..5 %}
-                                    {% if i <= avgRating %}
-                                        <i class="fas fa-star text-warning"></i>
-                                    {% elseif i - 0.5 <= avgRating %}
-                                        <i class="fas fa-star-half-alt text-warning"></i>
-                                    {% else %}
-                                        <i class="far fa-star text-warning"></i>
-                                    {% endif %}
-                                {% endfor %}
-                            </div>
+                        <p class="card-text">{{ film.genre.name }}</p>
+
+                        <!-- ⭐ Star Rating -->
+                        <div class="rating mb-2">
+                            {% set avgRating = film.getAverageRating() %}
+                            {% for i in 1..5 %}
+                                {% if i <= avgRating %}
+                                    <i class="fas fa-star text-warning"></i>
+                                {% elseif i - 0.5 <= avgRating %}
+                                    <i class="fas fa-star-half-alt text-warning"></i>
+                                {% else %}
+                                    <i class="far fa-star text-warning"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
 
                         <a href="{{ path('app_film_show', {'id': film.id}) }}" class="btn btn-dark rounded-pill px-4">More</a>
                     </div>
