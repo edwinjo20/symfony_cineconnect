@@ -3,7 +3,7 @@
 {% block title %}Film index{% endblock %}
 
 {% block body %}
-    <h1>Film index</h1>
+    <h1>Film Page</h1>
 
     <table class="table">
         <thead>
@@ -35,10 +35,10 @@
                     <a href="{{ path('app_film_show', {'id': film.id}) }}">Show</a>
                     {% if is_granted('ROLE_ADMIN') %}
                         <a href="{{ path('admin_dashboard') }}">Edit</a> | 
-                        <form action="{{ path('admin_film_delete', {'id': film.id}) }}" method="POST" style="display:inline;">
+                        {# <form action="{{ path('admin_film_delete', {'id': film.id}) }}" method="POST" style="display:inline;">
                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ film.id) }}">
                             <button type="submit">Delete</button>
-                        </form>
+                        </form> #}
                     {% endif %}
                 </td>
             </tr>
@@ -50,7 +50,4 @@
         </tbody>
     </table>
 
-    {% if is_granted('ROLE_ADMIN') %}
-        <a href="{{ path('admin_film_new') }}">Create new</a>
-    {% endif %}
 {% endblock %}

@@ -56,7 +56,9 @@
                         <form action="{{ path('admin_comment_approve', {'id': comment.id}) }}" method="POST">
                             <button type="submit">Approve</button>
                         </form>
-                        <a href="{{ path('admin_comment_delete', {'id': comment.id}) }}">Delete</a>
+                        <form action="{{ path('admin_comment_delete', {'id': comment.id}) }}" method="POST">
+                            <button type="submit">Delete</button>
+                        </form>
                     </td>
                 </tr>
             {% else %}
