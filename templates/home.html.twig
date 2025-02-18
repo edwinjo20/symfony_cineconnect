@@ -1,0 +1,65 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}CineConnect - Home{% endblock %}
+
+{% block body %}
+<!-- 🔄 Full-Width Carousel for Latest 4 Films -->
+<div id="homeCarousel" class="carousel slide mb-5" data-bs-ride="carousel" data-bs-interval="2000">
+    <div class="carousel-inner">
+        {% for film in latestFilms %}
+            <div class="carousel-item {% if loop.first %}active{% endif %}">
+                <img src="{{ asset('uploads/images/' ~ film.imagePath) }}" class="d-block w-100" style="height: 500px; object-fit: cover;" alt="{{ film.title }}">
+                <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 p-3 rounded">
+                    <h5>{{ film.title }}</h5>
+                    <p>{{ film.description|length > 100 ? film.description|slice(0, 100) ~ '...' : film.description }}</p>
+                    <a href="{{ path('app_film_show', {'id': film.id}) }}" class="btn btn-primary">View Details</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <button class="carousel-control-prev" type="button" data-bs-target="#homeCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#homeCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
+</div>
+
+<!-- 🎬 Latest 4 Films Section -->
+<div class="container mt-5">
+    <h2 class="mb-4 text-center text-light">Latest Films</h2>
+
+    <div class="row row-cols-1 row-cols-md-4 g-4">  {# ✅ Fixing grid issue #}
+        {% for film in latestFilms %}
+            <div class="col">
+                <div class="card movie-card shadow-lg">
+                    <img src="{{ asset('uploads/images/' ~ film.imagePath) }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="{{ film.title }}">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-light">{{ film.title }}</h5>
+                        <p class="card-text text-light">{{ film.genre.name }}</p>
+
+                        <!-- ⭐ Star Rating (Added from film page) -->
+                        <div class="rating mb-2">
+                            {% set avgRating = film.getAverageRating() %}
+                            {% for i in 1..5 %}
+                                {% if i <= avgRating %}
+                                    <i class="fas fa-star text-warning"></i>
+                                {% elseif i - 0.5 <= avgRating %}
+                                    <i class="fas fa-star-half-alt text-warning"></i>
+                                {% else %}
+                                    <i class="far fa-star text-warning"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <a href="{{ path('app_film_show', {'id': film.id}) }}" class="btn btn-dark rounded-pill px-4">More</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
