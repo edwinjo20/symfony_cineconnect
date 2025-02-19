@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-#[Route('/review')]
+#[Route('/review')] // ✅ This already prefixes all routes inside this controller
 final class ReviewController extends AbstractController
 {
     // Index: List all reviews
@@ -57,44 +57,39 @@ final class ReviewController extends AbstractController
     }
 
     // Edit review: Update an existing review
-// Inside ReviewController
+    #[Route('/{id}/edit', name: 'app_review_edit', methods: ['GET', 'POST'])]  // ✅ Fixed
+    public function edit(Request $request, Review $review, EntityManagerInterface $entityManager): Response
+    {
+        // Ensure the logged-in user is the owner of the review
+        if ($review->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('You are not allowed to edit this review.');
+        }
 
-#[Route('/review/{id}/edit', name: 'app_review_edit', methods: ['GET', 'POST'])]
-public function edit(Request $request, Review $review, EntityManagerInterface $entityManager): Response
-{
-    // Ensure the logged-in user is the owner of the review
-    if ($review->getUser() !== $this->getUser()) {
-        throw $this->createAccessDeniedException('You are not allowed to edit this review.');
+        $form = $this->createForm(ReviewType::class, $review);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+
+            return $this->redirectToRoute('app_film_show', ['id' => $review->getFilm()->getId()]);
+        }
+
+        return $this->render('review/edit.html.twig', [
+            'review' => $review,
+            'form' => $form->createView(),
+        ]);
     }
 
-    $form = $this->createForm(ReviewType::class, $review);
-    $form->handleRequest($request);
-
-    if ($form->isSubmitted() && $form->isValid()) {
-        $entityManager->flush();
-
-        return $this->redirectToRoute('app_film_show', ['id' => $review->getFilm()->getId()]);
-    }
-
-    return $this->render('review/edit.html.twig', [
-        'review' => $review,
-        'form' => $form->createView(),
-    ]);
-}
-
-    
     // Delete review: Remove an existing review
-    #[Route('/review/{id}/delete', name: 'app_review_delete', methods: ['POST'])]
-    public function deleteReview(Request $request, Review $review, EntityManagerInterface $entityManager): Response
+    #[Route('/{id}/delete', name: 'app_review_delete', methods: ['POST'])]  // ✅ Fixed
+    public function delete(Request $request, Review $review, EntityManagerInterface $entityManager): Response
     {
         // Validate the CSRF token
         if ($this->isCsrfTokenValid('delete' . $review->getId(), $request->request->get('_token'))) {
             $entityManager->remove($review);
             $entityManager->flush();
         }
-    
+
         return $this->redirectToRoute('app_film_show', ['id' => $review->getFilm()->getId()]);
     }
-    
-    
-}    
+}

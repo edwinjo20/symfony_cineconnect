@@ -18,60 +18,66 @@
 
     <!-- ⭐ Reviews Section -->
     <div class="mt-4">
-        <h4 style="color:rgb(162, 180, 199);">Reviews</h4>
+        <h4 class="text-light">Reviews</h4>
 
         {% for review in reviews %}
-            <div class="card mb-3">
+            <div class="card mb-4 shadow-sm">
                 <div class="card-body">
-                    <h5 class="card-title">
-                        {{ review.user.username }} - 
-                        <span class="text-warning">⭐ {{ review.ratingGiven }}/10</span>
-                    </h5>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-1">
+                            {{ review.user.username }} 
+                            <span class="text-warning">⭐ {{ review.ratingGiven }}/10</span>
+                        </h5>
+                    </div>
+                    <p class="text-muted small">Posted on {{ review.publicationDate|date('Y-m-d H:i') }}</p>
                     <p class="card-text">{{ review.content }}</p>
-                    <p class="text-muted">
-                        <small>Posted on {{ review.publicationDate|date('Y-m-d H:i') }}</small>
-                    </p>
 
-                    <!-- 🔽 Toggle Comments Button -->
-                    <button class="btn btn-sm btn-secondary mt-2" 
-                            onclick="toggleComments({{ review.id }})">
+                    {% if app.user and app.user == review.user %}
+                        <div class="d-flex gap-2">
+                            <a href="{{ path('app_review_edit', {'id': review.id}) }}" class="btn btn-sm btn-warning">
+                                ✏️ Edit
+                            </a>
+                            <form action="{{ path('app_review_delete', {'id': review.id}) }}" method="POST">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ review.id) }}">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">
+                                    🗑️ Delete
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- 💬 Comments Section (Inside the Review Card) -->
+                <div class="border-top p-3 bg-light">
+                    <button class="btn btn-sm btn-secondary w-100" onclick="toggleComments({{ review.id }})">
                         See All Comments
                     </button>
 
-                    <!-- 💬 Comments Section -->
                     <div id="comments-{{ review.id }}" class="mt-3" style="display:none;">
-                        <h5>Comments</h5>
+                        <h6>Comments</h6>
                         {% for comment in review.comments %}
                             {% if comment.approved %}
-                                <div class="alert alert-light border">
-                                    <p><strong>{{ comment.user.username }}</strong>: {{ comment.content }}</p>
-                                    <p class="text-muted">
-                                        <small>Posted on {{ comment.date|date('Y-m-d H:i') }}</small>
-                                    </p>
+                                <div class="alert alert-secondary">
+                                    <p class="mb-0"><strong>{{ comment.user.username }}</strong>: {{ comment.content }}</p>
+                                    <small class="text-muted">Posted on {{ comment.date|date('Y-m-d H:i') }}</small>
                                 </div>
                             {% endif %}
                         {% endfor %}
                     </div>
 
-                    <!-- 📝 Add a Comment Form -->
                     {% if app.user %}
-                        <button class="btn btn-sm btn-outline-dark mt-2" 
+                        <button class="btn btn-sm btn-outline-dark mt-2 w-100" 
                                 onclick="document.getElementById('comment-form-{{ review.id }}').style.display='block'">
                             Add Comment
                         </button>
 
                         <div id="comment-form-{{ review.id }}" class="mt-2" style="display:none;">
-                            <h5>Leave a Comment</h5>
                             <form action="{{ path('app_film_show', {'id': film.id}) }}" method="POST">
                                 <input type="hidden" name="review_id" value="{{ review.id }}">
-                                <div class="mb-3">
-                                    <textarea name="content" class="form-control" rows="3" required></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-success">Submit Comment</button>
+                                <textarea name="content" class="form-control mb-2" rows="2" required></textarea>
+                                <button type="submit" class="btn btn-success btn-sm w-100">Submit Comment</button>
                             </form>
                         </div>
-                    {% else %}
-                        <p class="text-muted">You need to be logged in to leave a comment.</p>
                     {% endif %}
                 </div>
             </div>
@@ -80,7 +86,7 @@
 
     <!-- 📝 Add a Review Section -->
     <div class="mt-5">
-        <h4 style="color:rgb(162, 180, 199);">Add Reviews</h4>
+        <h4 class="text-light">Add Reviews</h4>
 
         {% if app.user %}
             <div class="card p-3">
@@ -96,7 +102,7 @@
                     {{ form_widget(reviewForm.ratingGiven, {'attr': {'class': 'form-control'}}) }}
                 </div>
 
-                <button type="submit" class="btn btn-primary">Submit Review</button>
+                <button type="submit" class="btn btn-primary w-100">Submit Review</button>
                 {{ form_end(reviewForm) }}
             </div>
         {% else %}

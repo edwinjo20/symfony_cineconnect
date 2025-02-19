@@ -14,7 +14,7 @@ class HomeController extends AbstractController
     public function index(EntityManagerInterface $entityManager): Response
     {
         $latestFilms = $entityManager->getRepository(Film::class)
-            ->findBy([], ['releaseDate' => 'DESC'], 4); // Fetch only the latest 4 films
+            ->findBy([], ['releaseDate' => 'DESC'], 8); // Fetch only the latest 4 films
 
         return $this->render('home.html.twig', [
             'latestFilms' => $latestFilms,

@@ -28,12 +28,12 @@ class ReviewType extends AbstractType
             // Rating field (numeric input between 1 and 10)
             ->add('ratingGiven', NumberType::class, [
                 'label' => 'Rating (1-10)',
-                'attr' => ['min' => 1, 'max' => 10], // Set the minimum and maximum value for rating
+                'attr' => ['min' => 1, 'max' => 5], // Set the minimum and maximum value for rating
                 'constraints' => [
                     new NotBlank(['message' => 'Please enter a rating.']),
                     new Range([
                         'min' => 1,
-                        'max' => 10,
+                        'max' => 5,
                         'notInRangeMessage' => 'Rating must be between {{ min }} and {{ max }}.',
                     ]),
                 ],

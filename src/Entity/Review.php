@@ -26,7 +26,7 @@ class Review
     #[Groups(['review:read', 'review:write'])]
     #[Assert\Range(
         min: 1,
-        max: 10,
+        max: 5,
         notInRangeMessage: 'Rating must be between {{ min }} and {{ max }}.'
     )]
     private $ratingGiven;
