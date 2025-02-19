@@ -35,7 +35,7 @@ pipeline {
                     def envLocal = """
                     APP_ENV=prod
                     APP_DEBUG=0
-                    DATABASE_URL=mysql://${DB_USER}:${DB_PASS}@${DB_HOST}:3306/${DB_NAME}?serverVersion=8.0&charset=utf8mb4
+                    DATABASE_URL=mysql://${DB_USER}:${env.DB_PASS}@${DB_HOST}:3306/${DB_NAME}?serverVersion=8.0&charset=utf8mb4
                     """
                     writeFile file: "${DEPLOY_DIR}/.env.local", text: envLocal
                 }
