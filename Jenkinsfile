@@ -1,5 +1,6 @@
 pipeline {
     agent any
+
     environment {
         GIT_REPO = "https://github.com/edwinjo20/symfony_cineconnect.git"
         GIT_BRANCH = "main"
@@ -7,7 +8,9 @@ pipeline {
         DB_HOST = "mysql"
         DB_NAME = "cinemacineconnect"
         DB_USER = "root"
+        DB_PASS = "" // No password for the MySQL user
     }
+
     stages {
         stage('Clone Repository') {
             steps {
@@ -17,6 +20,7 @@ pipeline {
                 }
             }
         }
+
         stage('Install Dependencies') {
             steps {
                 dir("${DEPLOY_DIR}") {
@@ -24,6 +28,7 @@ pipeline {
                 }
             }
         }
+
         stage('Setup Environment') {
             steps {
                 script {
@@ -36,6 +41,7 @@ pipeline {
                 }
             }
         }
+
         stage('Migrate Database') {
             steps {
                 dir("${DEPLOY_DIR}") {
@@ -44,6 +50,7 @@ pipeline {
                 }
             }
         }
+
         stage('Clear Cache & Set Permissions') {
             steps {
                 dir("${DEPLOY_DIR}") {
@@ -53,6 +60,7 @@ pipeline {
                 }
             }
         }
+
         stage('Deploy to Server') {
             steps {
                 script {
@@ -63,6 +71,7 @@ pipeline {
             }
         }
     }
+
     post {
         success {
             echo "✅ Symfony application deployed successfully!"
