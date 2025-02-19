@@ -4,11 +4,11 @@ pipeline {
     environment {
         GIT_REPO = "https://github.com/edwinjo20/symfony_cineconnect.git"
         GIT_BRANCH = "main"
-        DEPLOY_DIR = "symfony_app"
+        DEPLOY_DIR = "web005"
         DB_HOST = "mysql"
         DB_NAME = "cinemacineconnect"
         DB_USER = "root"
-        DB_PASS = "" // No password for the MySQL user
+        DB_PASS = "" /* No password for the MySQL user */
     }
 
     stages {
@@ -54,7 +54,7 @@ pipeline {
         stage('Clear Cache & Set Permissions') {
             steps {
                 dir("${DEPLOY_DIR}") {
-                    sh 'php bin/console cache:clear --env=dec --no-debug'
+                    sh 'php bin/console cache:clear --env=dev --no-debug'
                     sh 'php bin/console cache:warmup --env=dev'
                     sh 'chmod -R 775 var/'
                 }
