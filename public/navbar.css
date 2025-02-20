@@ -114,7 +114,7 @@ html, body {
     color: #9EB3C2;
 }
 .movie-card:hover {
-    transform: translateY(-10px);
+    transform: translateY(-15px);
 }
 
 .movie-card img {
@@ -145,7 +145,4 @@ html, body {
 
 .tables-hover tbody tr:hover {
     background-color: rgba(255, 255, 255, 0.1);
-}
-.container {
-    overflow-x: visible !important;
 }

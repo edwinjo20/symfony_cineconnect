@@ -5,79 +5,72 @@ pipeline {
         GIT_REPO = "https://github.com/edwinjo20/symfony_cineconnect.git"
         GIT_BRANCH = "main"
         DEPLOY_DIR = "web005"
-        DB_HOST = "mysql"
-        DB_NAME = "cinemacineconnect"
-        DB_USER = "root"
-        DB_PASS = "" /* No password for the MySQL user */
     }
 
     stages {
-        stage('Clone Repository') {
+        stage('Cloner le dépôt') {
             steps {
-                script {
-                    sh "rm -rf ${DEPLOY_DIR}"
-                    sh "git clone -b ${GIT_BRANCH} ${GIT_REPO} ${DEPLOY_DIR}"
-                }
+                sh "rm -rf ${DEPLOY_DIR}" // Nettoyage du précédent build
+                sh "git clone -b ${GIT_BRANCH} ${GIT_REPO} ${DEPLOY_DIR}"
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Installation des dépendances') {
             steps {
                 dir("${DEPLOY_DIR}") {
-                    sh 'composer install --no-dev --optimize-autoloader'
+                    sh 'composer install --optimize-autoloader'
                 }
             }
         }
 
-        stage('Setup Environment') {
+        stage('Configuration de l\'environnement') {
             steps {
                 script {
                     def envLocal = """
                     APP_ENV=dev
                     APP_DEBUG=1
-                    DATABASE_URL=mysql://${DB_USER}:${env.DB_PASS}@${DB_HOST}:3306/${DB_NAME}?serverVersion=8.0&charset=utf8mb4
-                    """
+*                    DATABASE_URL=mysql://root:routitop@127.0.0.1:3306/${DEPLOY_DIR}?serverVersion=9.1.0&charset=utf8mb4
+                    """.stripIndent()
+
                     writeFile file: "${DEPLOY_DIR}/.env.local", text: envLocal
                 }
             }
         }
 
-        stage('Migrate Database') {
+        stage('Migration de la base de données') {
             steps {
                 dir("${DEPLOY_DIR}") {
-                    sh 'php bin/console doctrine:database:create --if-not-exists'
+                    sh 'php bin/console doctrine:database:create --if-not-exists --env=prod'
                     sh 'php bin/console doctrine:migrations:migrate --no-interaction --env=prod'
                 }
             }
         }
 
-        stage('Clear Cache & Set Permissions') {
+        stage('Nettoyage du cache') {
             steps {
                 dir("${DEPLOY_DIR}") {
-                    sh 'php bin/console cache:clear --env=dev --no-debug'
-                    sh 'php bin/console cache:warmup --env=dev'
-                    sh 'chmod -R 775 var/'
+                    sh 'php bin/console cache:clear --env=prod'
+                    sh 'php bin/console cache:warmup'
                 }
             }
         }
 
-        stage('Deploy to Server') {
+        stage('Déploiement') {
             steps {
-                script {
-                    sh "mkdir -p /var/www/html/${DEPLOY_DIR}"
-                    sh "rsync -av --delete ${DEPLOY_DIR}/ /var/www/html/${DEPLOY_DIR}/"
-                    sh "chmod -R 775 /var/www/html/${DEPLOY_DIR}/var"
-                }
+                sh "rm -rf /var/www/html/${DEPLOY_DIR}" // Supprime le dossier de destination
+                sh "mkdir /var/www/html/${DEPLOY_DIR}" // Recréé le dossier de destination
+                sh "cp -rT ${DEPLOY_DIR} /var/www/html/${DEPLOY_DIR}"
+                sh "chmod -R 775 /var/www/html/${DEPLOY_DIR}/var"
             }
         }
     }
 
     post {
         success {
-            echo "✅ Symfony application deployed successfully!"
+            echo 'Déploiement réussi !'
         }
         failure {
-            echo "❌ Deployment failed. Check Jenkins logs for errors."
+            echo 'Erreur lors du déploiement.'
         }
     }
 }
