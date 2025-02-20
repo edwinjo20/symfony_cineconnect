@@ -10,7 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 class RegistrationControllerTest extends WebTestCase
 {
     private KernelBrowser $client;
-    private EntityManagerInterface $userRepository;
+    private $userRepository;
 
     protected function setUp(): void
     {
@@ -21,7 +21,7 @@ class RegistrationControllerTest extends WebTestCase
 
         /** @var EntityManager $em */
         $em = $container->get('doctrine')->getManager();
-        $this->userRepository = $container->get(EntityManagerInterface::class);
+        $this->userRepository = $em->getRepository(\App\Entity\User::class);
 
         foreach ($this->userRepository->findAll() as $user) {
             $em->remove($user);

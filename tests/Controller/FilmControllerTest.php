@@ -65,9 +65,9 @@ final class FilmControllerTest extends WebTestCase{
         $fixture = new Film();
         $fixture->setTitle('My Title');
         $fixture->setDescription('My Title');
-        $fixture->setReleaseDate('My Title');
+        $fixture->setReleaseDate(new \DateTime('2023-01-01'));
         $fixture->setImagePath('My Title');
-        $fixture->setGenre('My Title');
+        $fixture->setGenre(null); // Replace with an actual Genre object if needed
 
         $this->manager->persist($fixture);
         $this->manager->flush();
@@ -86,9 +86,9 @@ final class FilmControllerTest extends WebTestCase{
         $fixture = new Film();
         $fixture->setTitle('Value');
         $fixture->setDescription('Value');
-        $fixture->setReleaseDate('Value');
+        $fixture->setReleaseDate(new \DateTime('2023-01-01'));
         $fixture->setImagePath('Value');
-        $fixture->setGenre('Value');
+        $fixture->setGenre(null); // Replace with an actual Genre object if needed
 
         $this->manager->persist($fixture);
         $this->manager->flush();
@@ -120,9 +120,9 @@ final class FilmControllerTest extends WebTestCase{
         $fixture = new Film();
         $fixture->setTitle('Value');
         $fixture->setDescription('Value');
-        $fixture->setReleaseDate('Value');
+        $fixture->setReleaseDate(new \DateTime('2023-01-01'));
         $fixture->setImagePath('Value');
-        $fixture->setGenre('Value');
+        $fixture->setGenre(null); // Replace with an actual Genre object if needed
 
         $this->manager->persist($fixture);
         $this->manager->flush();

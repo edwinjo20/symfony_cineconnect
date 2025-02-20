@@ -63,9 +63,9 @@ final class CommentControllerTest extends WebTestCase{
         $this->markTestIncomplete();
         $fixture = new Comment();
         $fixture->setContent('My Title');
-        $fixture->setDate('My Title');
-        $fixture->setReview('My Title');
-        $fixture->setUser('My Title');
+        $fixture->setDate(new \DateTime());
+        $fixture->setReview($this->createMock(\App\Entity\Review::class));
+        $fixture->setUser($this->createMock(\App\Entity\User::class));
 
         $this->manager->persist($fixture);
         $this->manager->flush();
@@ -83,9 +83,9 @@ final class CommentControllerTest extends WebTestCase{
         $this->markTestIncomplete();
         $fixture = new Comment();
         $fixture->setContent('Value');
-        $fixture->setDate('Value');
-        $fixture->setReview('Value');
-        $fixture->setUser('Value');
+        $fixture->setDate(new \DateTime());
+        $fixture->setReview($this->createMock(\App\Entity\Review::class));
+        $fixture->setUser($this->createMock(\App\Entity\User::class));
 
         $this->manager->persist($fixture);
         $this->manager->flush();
@@ -114,9 +114,9 @@ final class CommentControllerTest extends WebTestCase{
         $this->markTestIncomplete();
         $fixture = new Comment();
         $fixture->setContent('Value');
-        $fixture->setDate('Value');
-        $fixture->setReview('Value');
-        $fixture->setUser('Value');
+        $fixture->setDate(new \DateTime());
+        $fixture->setReview($this->createMock(\App\Entity\Review::class));
+        $fixture->setUser($this->createMock(\App\Entity\User::class));
 
         $this->manager->persist($fixture);
         $this->manager->flush();

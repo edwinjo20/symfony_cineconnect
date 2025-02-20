@@ -1,46 +1,42 @@
-<?php
+<?php 
 
 namespace App\Tests\Controller;
 
 use App\Entity\Review;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use App\Entity\Film;
+use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class ReviewControllerTest extends WebTestCase{
+final class ReviewControllerTest extends WebTestCase {
     private KernelBrowser $client;
     private EntityManagerInterface $manager;
     private EntityRepository $reviewRepository;
     private string $path = '/review/';
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         $this->client = static::createClient();
         $this->manager = static::getContainer()->get('doctrine')->getManager();
         $this->reviewRepository = $this->manager->getRepository(Review::class);
 
+        // Clean up database
         foreach ($this->reviewRepository->findAll() as $object) {
             $this->manager->remove($object);
         }
-
         $this->manager->flush();
     }
 
-    public function testIndex(): void
-    {
+    public function testIndex(): void {
         $this->client->followRedirects();
         $crawler = $this->client->request('GET', $this->path);
 
         self::assertResponseStatusCodeSame(200);
         self::assertPageTitleContains('Review index');
-
-        // Use the $crawler to perform additional assertions e.g.
-        // self::assertSame('Some text on the page', $crawler->filter('.p')->first());
     }
 
-    public function testNew(): void
-    {
+    public function testNew(): void {
         $this->markTestIncomplete();
         $this->client->request('GET', sprintf('%snew', $this->path));
 
@@ -48,26 +44,29 @@ final class ReviewControllerTest extends WebTestCase{
 
         $this->client->submitForm('Save', [
             'review[content]' => 'Testing',
-            'review[ratingGiven]' => 'Testing',
-            'review[publicationDate]' => 'Testing',
-            'review[film]' => 'Testing',
-            'review[user]' => 'Testing',
+            'review[ratingGiven]' => 5,
+            'review[publicationDate]' => (new \DateTime())->format('Y-m-d'),
+            'review[film]' => 1,
+            'review[user]' => 1,
         ]);
 
         self::assertResponseRedirects($this->path);
 
-        self::assertSame(1, $this->reviewRepository->count([]));
+        $reviews = $this->reviewRepository->findAll();
+        self::assertCount(1, $reviews);
+        self::assertInstanceOf(Review::class, $reviews[0]);
     }
 
-    public function testShow(): void
-    {
+    public function testShow(): void {
         $this->markTestIncomplete();
+
+        // Create a new review
         $fixture = new Review();
         $fixture->setContent('My Title');
-        $fixture->setRatingGiven('My Title');
-        $fixture->setPublicationDate('My Title');
-        $fixture->setFilm('My Title');
-        $fixture->setUser('My Title');
+        $fixture->setRatingGiven(5);
+        $fixture->setPublicationDate(new \DateTime('now'));
+        $fixture->setFilm($this->manager->getRepository(Film::class)->find(1));
+        $fixture->setUser($this->manager->getRepository(User::class)->find(1));
 
         $this->manager->persist($fixture);
         $this->manager->flush();
@@ -76,19 +75,18 @@ final class ReviewControllerTest extends WebTestCase{
 
         self::assertResponseStatusCodeSame(200);
         self::assertPageTitleContains('Review');
-
-        // Use assertions to check that the properties are properly displayed.
     }
 
-    public function testEdit(): void
-    {
+    public function testEdit(): void {
         $this->markTestIncomplete();
+
+        // Create and persist a review
         $fixture = new Review();
         $fixture->setContent('Value');
-        $fixture->setRatingGiven('Value');
-        $fixture->setPublicationDate('Value');
-        $fixture->setFilm('Value');
-        $fixture->setUser('Value');
+        $fixture->setRatingGiven(5);
+        $fixture->setPublicationDate(new \DateTime('now'));
+        $fixture->setFilm($this->manager->getRepository(Film::class)->find(1));
+        $fixture->setUser($this->manager->getRepository(User::class)->find(1));
 
         $this->manager->persist($fixture);
         $this->manager->flush();
@@ -97,32 +95,41 @@ final class ReviewControllerTest extends WebTestCase{
 
         $this->client->submitForm('Update', [
             'review[content]' => 'Something New',
-            'review[ratingGiven]' => 'Something New',
-            'review[publicationDate]' => 'Something New',
-            'review[film]' => 'Something New',
-            'review[user]' => 'Something New',
+            'review[ratingGiven]' => 10,  // Assuming max rating is 10
+            'review[publicationDate]' => (new \DateTime())->format('Y-m-d'),
+            'review[film]' => 1,
+            'review[user]' => 1,
         ]);
 
-        self::assertResponseRedirects('/review/');
+        self::assertResponseRedirects($this->path);
 
-        $fixture = $this->reviewRepository->findAll();
+        // Retrieve updated entity
+        $updatedFixture = $this->reviewRepository->findAll();
+        self::assertNotEmpty($updatedFixture, 'No review found after edit');
+        self::assertInstanceOf(Review::class, $updatedFixture[0]);
+                
+        // Assertions to validate modifications
+        /** @var Review $review */
+        $review = $updatedFixture[0];
 
-        self::assertSame('Something New', $fixture[0]->getContent());
-        self::assertSame('Something New', $fixture[0]->getRatingGiven());
-        self::assertSame('Something New', $fixture[0]->getPublicationDate());
-        self::assertSame('Something New', $fixture[0]->getFilm());
-        self::assertSame('Something New', $fixture[0]->getUser());
+        self::assertSame('Something New', $review->getContent());
+        self::assertSame(10, $review->getRatingGiven());
+        self::assertInstanceOf(\DateTime::class, $review->getPublicationDate());
+        self::assertInstanceOf(Film::class, $review->getFilm());
+        self::assertInstanceOf(User::class, $review->getUser());
+        
     }
 
-    public function testRemove(): void
-    {
+    public function testRemove(): void {
         $this->markTestIncomplete();
+
+        // Create and persist a review
         $fixture = new Review();
         $fixture->setContent('Value');
-        $fixture->setRatingGiven('Value');
-        $fixture->setPublicationDate('Value');
-        $fixture->setFilm('Value');
-        $fixture->setUser('Value');
+        $fixture->setRatingGiven(5);
+        $fixture->setPublicationDate(new \DateTime('now'));
+        $fixture->setFilm($this->manager->getRepository(Film::class)->find(1));
+        $fixture->setUser($this->manager->getRepository(User::class)->find(1));
 
         $this->manager->persist($fixture);
         $this->manager->flush();
@@ -130,7 +137,7 @@ final class ReviewControllerTest extends WebTestCase{
         $this->client->request('GET', sprintf('%s%s', $this->path, $fixture->getId()));
         $this->client->submitForm('Delete');
 
-        self::assertResponseRedirects('/review/');
+        self::assertResponseRedirects($this->path);
         self::assertSame(0, $this->reviewRepository->count([]));
     }
 }

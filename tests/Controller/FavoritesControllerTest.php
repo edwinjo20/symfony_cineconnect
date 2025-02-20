@@ -60,8 +60,13 @@ final class FavoritesControllerTest extends WebTestCase{
     {
         $this->markTestIncomplete();
         $fixture = new Favorites();
-        $fixture->setUser('My Title');
-        $fixture->setFilm('My Title');
+        $user = new \App\Entity\User();
+        $user->setUsername('My Title');
+        $fixture->setUser($user);
+
+        $film = new \App\Entity\Film();
+        $film->setTitle('My Title');
+        $fixture->setFilm($film);
 
         $this->manager->persist($fixture);
         $this->manager->flush();
@@ -78,8 +83,13 @@ final class FavoritesControllerTest extends WebTestCase{
     {
         $this->markTestIncomplete();
         $fixture = new Favorites();
-        $fixture->setUser('Value');
-        $fixture->setFilm('Value');
+        $user = new \App\Entity\User();
+        $user->setUsername('Value');
+        $fixture->setUser($user);
+
+        $film = new \App\Entity\Film();
+        $film->setTitle('Value');
+        $fixture->setFilm($film);
 
         $this->manager->persist($fixture);
         $this->manager->flush();
@@ -95,16 +105,21 @@ final class FavoritesControllerTest extends WebTestCase{
 
         $fixture = $this->favoriteRepository->findAll();
 
-        self::assertSame('Something New', $fixture[0]->getUser());
-        self::assertSame('Something New', $fixture[0]->getFilm());
+        self::assertSame('Something New', $fixture[0]->getUser()->getUsername());
+        self::assertSame('Something New', $fixture[0]->getFilm()->getTitle());
     }
 
     public function testRemove(): void
     {
         $this->markTestIncomplete();
         $fixture = new Favorites();
-        $fixture->setUser('Value');
-        $fixture->setFilm('Value');
+        $user = new \App\Entity\User();
+        $user->setUsername('Value');
+        $fixture->setUser($user);
+
+        $film = new \App\Entity\Film();
+        $film->setTitle('Value');
+        $fixture->setFilm($film);
 
         $this->manager->persist($fixture);
         $this->manager->flush();
