@@ -21,6 +21,8 @@ final class AdminController extends AbstractController
      * 📌 Admin Dashboard - Displays all films and unapproved comments
      */
     #[Route('/', name: 'admin_dashboard', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN')] // Ensures only admins can access
+
     public function dashboard(EntityManagerInterface $entityManager): Response
     {
         $films = $entityManager->getRepository(Film::class)->findAll();

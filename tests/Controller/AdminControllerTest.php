@@ -5,6 +5,7 @@ namespace App\Tests\Controller;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use App\Entity\Film;
 use App\Entity\Comment;
+use App\Entity\User;
 
 final class AdminControllerTest extends WebTestCase
 {
@@ -14,11 +15,17 @@ final class AdminControllerTest extends WebTestCase
     protected function setUp(): void
     {
         $this->client = static::createClient();
-        $this->entityManager = $this->client->getContainer()
-            ->get('doctrine')
-            ->getManager();
+        $this->entityManager = $this->client->getContainer()->get('doctrine')->getManager();
+    
+        // Fetch admin user and log in
+        $adminUser = $this->entityManager->getRepository(User::class)->findOneBy(['email' => 'admin@example.com']);
+        if ($adminUser) {
+            $this->client->loginUser($adminUser);
+        } else {
+            $this->markTestSkipped('Admin user not found, skipping test.');
+        }
     }
-
+    
     public function testIndex(): void 
     {
         $this->client->request('GET', '/admin');
