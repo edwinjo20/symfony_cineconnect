@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DEPLOY_DIR = "web005"
+        DEPLOY_DIR = "cineconnect - Edwin/web005" // ✅ Chemin mis à jour
     }
 
     stages {
@@ -14,8 +14,11 @@ pipeline {
 
         stage('Cloner le dépôt') {
             steps {
-                sh "rm -rf ${DEPLOY_DIR}" // Clean previous build
-                sh "git clone -b main https://github.com/edwinjo20/symfony_cineconnect.git ${DEPLOY_DIR}"
+                sh "rm -rf \"${DEPLOY_DIR}\"" // Nettoyage
+                sh "git clone -b main https://github.com/edwinjo20/symfony_cineconnect.git \"cineconnect - Edwin\""
+
+                // ✅ Vérification après le clonage
+                sh "ls -lah \"cineconnect - Edwin\""
             }
         }
 
@@ -92,10 +95,10 @@ pipeline {
         stage('Déploiement') {
             steps {
                 sh '''
-                sudo mkdir -p /var/www/html/${DEPLOY_DIR}
-                sudo cp -rT ${DEPLOY_DIR} /var/www/html/${DEPLOY_DIR}
-                sudo chown -R www-data:www-data /var/www/html/${DEPLOY_DIR}
-                sudo chmod -R 775 /var/www/html/${DEPLOY_DIR}/var
+                sudo mkdir -p /var/www/html/"${DEPLOY_DIR}"
+                sudo cp -rT "${DEPLOY_DIR}" /var/www/html/"${DEPLOY_DIR}"
+                sudo chown -R www-data:www-data /var/www/html/"${DEPLOY_DIR}"
+                sudo chmod -R 775 /var/www/html/"${DEPLOY_DIR}/var"
                 '''
             }
         }
@@ -103,10 +106,10 @@ pipeline {
 
     post {
         success {
-            echo 'Deployment successful!'
+            echo '✅ Deployment successful!'
         }
         failure {
-            echo 'Deployment failed.'
+            echo '❌ Deployment failed.'
         }
     }
 }
