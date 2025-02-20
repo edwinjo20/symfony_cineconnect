@@ -2,8 +2,7 @@ pipeline {
     agent any
 
     environment {
-        WORKSPACE_DIR = "${env.WORKSPACE}"
-        DEPLOY_DIR = "${env.WORKSPACE}/web005"
+        DEPLOY_DIR = "web005"
     }
 
     stages {
@@ -23,7 +22,11 @@ pipeline {
         stage('Fix Symfony Flex') {
             steps {
                 dir("${DEPLOY_DIR}") {
-                    sh 'composer require symfony/flex --no-update --no-plugins --no-scripts'
+                    sh '''
+                    composer remove symfony/flex --no-update
+                    composer require symfony/flex:^2.3 --no-plugins --no-scripts
+                    composer update symfony/flex --no-scripts
+                    '''
                 }
             }
         }
@@ -31,15 +34,22 @@ pipeline {
         stage('Installation des dépendances') {
             steps {
                 dir("${DEPLOY_DIR}") {
-                    sh 'composer install --optimize-autoloader --no-interaction'
+                    sh '''
+                    composer update --lock
+                    composer install --no-interaction --optimize-autoloader --no-scripts
+                    composer run-script auto-scripts
+                    '''
                 }
             }
         }
 
         stage('Debugging') {
             steps {
-                sh 'composer diagnose'
-                sh 'composer show symfony/flex'
+                sh '''
+                composer clear-cache
+                composer diagnose
+                composer show symfony/flex
+                '''
             }
         }
 
@@ -77,11 +87,12 @@ pipeline {
 
         stage('Déploiement') {
             steps {
-                sh """
-                mkdir -p /var/www/html/${DEPLOY_DIR}
-                cp -rT ${DEPLOY_DIR} /var/www/html/${DEPLOY_DIR}
-                chmod -R 775 /var/www/html/${DEPLOY_DIR}/var
-                """
+                sh '''
+                sudo mkdir -p /var/www/html/${DEPLOY_DIR}
+                sudo cp -rT ${DEPLOY_DIR} /var/www/html/${DEPLOY_DIR}
+                sudo chown -R www-data:www-data /var/www/html/${DEPLOY_DIR}
+                sudo chmod -R 775 /var/www/html/${DEPLOY_DIR}/var
+                '''
             }
         }
     }
