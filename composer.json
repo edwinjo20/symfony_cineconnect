@@ -78,20 +78,9 @@
         "symfony/polyfill-php82": "*"
     },
 "scripts": {
-    "auto-scripts": {
-        "cache:clear": [
-            "@php -r \"if (getenv('APP_ENV') === 'dev') { passthru('php bin/console cache:clear --env=dev --no-debug'); }\""
-        ],
-        "assets:install %PUBLIC_DIR%": "symfony-cmd",
-        "importmap:install": "symfony-cmd"
-    },
-    "post-install-cmd": [
-        "@auto-scripts"
-    ],
-    "post-update-cmd": [
-        "@auto-scripts"
-    ]
+    "auto-scripts": []
 },
+
 
     "conflict": {
         "symfony/symfony": "*"
