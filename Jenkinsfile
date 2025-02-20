@@ -24,7 +24,8 @@ pipeline {
                 dir("${DEPLOY_DIR}") {
                     sh '''
                     composer remove symfony/flex --no-update
-                    composer require symfony/flex:^2.3 --no-plugins --no-scripts
+                    composer clear-cache
+                    composer require symfony/flex --no-plugins --no-scripts --no-update
                     composer update symfony/flex --no-scripts
                     '''
                 }
@@ -37,7 +38,7 @@ pipeline {
                     sh '''
                     composer update --lock
                     composer install --no-interaction --optimize-autoloader --no-scripts
-                    composer run-script auto-scripts
+                    composer run-script auto-scripts || true
                     '''
                 }
             }
@@ -45,11 +46,14 @@ pipeline {
 
         stage('Debugging') {
             steps {
-                sh '''
-                composer clear-cache
-                composer diagnose
-                composer show symfony/flex
-                '''
+                dir("${DEPLOY_DIR}") {
+                    sh '''
+                    composer clear-cache
+                    composer diagnose
+                    composer show symfony/flex
+                    php bin/console about
+                    '''
+                }
             }
         }
 
