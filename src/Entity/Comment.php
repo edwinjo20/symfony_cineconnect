@@ -17,11 +17,11 @@ class Comment
     #[ORM\Column(type: 'datetime')]
     private $date;
 
-    #[ORM\ManyToOne(targetEntity: Review::class)]
+    #[ORM\ManyToOne(targetEntity: Review::class, inversedBy: "comments")]
     #[ORM\JoinColumn(nullable: false)]
     private $review;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "comments")]
     #[ORM\JoinColumn(nullable: false)]
     private $user;
 

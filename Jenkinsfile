@@ -2,76 +2,51 @@ pipeline {
     agent any
 
     environment {
-        DEPLOY_DIR = "cineconnect_edwin" // ✅ No spaces or special characters
+        GIT_REPO = "https://github.com/edwinjo20/symfony_cineconnect.git"
+        GIT_BRANCH = "main"
+        DEPLOY_DIR = "Web005"
     }
 
     stages {
-        // Stage 1: Check Composer Version
-        stage('Check Composer Version') {
+        stage('Cloner le dépôt') {
             steps {
-                sh 'composer --version'
+                sh "rm -rf ${DEPLOY_DIR}" // Nettoyage du précédent build
+                sh "git clone -b ${GIT_BRANCH} ${GIT_REPO} ${DEPLOY_DIR}"
             }
         }
 
-        // Stage 2: Clone the Repository
-        stage('Clone Repository') {
-            steps {
-                sh "rm -rf \"${DEPLOY_DIR}\"" // Cleanup
-                sh "git clone -b main https://github.com/edwinjo20/symfony_cineconnect.git \"${DEPLOY_DIR}\""
-                sh "ls -lah \"${DEPLOY_DIR}\"" // ✅ Verify cloning
-            }
-        }
-
-        // Stage 3: Fix Symfony Flex (if needed)
-        stage('Fix Symfony Flex') {
+        stage('Installation des dépendances') {
             steps {
                 dir("${DEPLOY_DIR}") {
-                    sh '''
-                    composer clear-cache
-                    composer require symfony/flex --no-plugins --no-scripts --no-update || true
-                    composer update symfony/flex --no-scripts || true
-                    '''
+                    sh 'composer install --optimize-autoloader'
                 }
             }
         }
 
-        // Stage 4: Install Dependencies
-        stage('Install Dependencies') {
+        stage('Configuration de l\'environnement') {
             steps {
-                dir("${DEPLOY_DIR}") {
-                    sh 'composer install --no-interaction --optimize-autoloader --no-scripts'
+                script {
+                    def envLocal = """
+                    APP_ENV=prod
+                    APP_DEBUG=1
+                    DATABASE_URL=mysql://root:routitop@127.0.0.1:3306/${DEPLOY_DIR}?serverVersion=8.3.0&charset=utf8mb4
+                    """.stripIndent()
+
+                    writeFile file: "${DEPLOY_DIR}/.env.local", text: envLocal
                 }
             }
         }
 
-        // Stage 5: Configure Environment
-        stage('Configure Environment') {
+        stage('Migration de la base de données') {
             steps {
                 dir("${DEPLOY_DIR}") {
-                    sh '''
-                    echo "APP_ENV=prod" > .env.local
-                    echo "APP_DEBUG=0" >> .env.local
-                    echo "DATABASE_URL=mysql://root:@mysql_container:3306/cinemacineconnect" >> .env.local
-                    cat .env.local # Debug: Print the contents of .env.local
-                    '''
+                    sh 'php bin/console doctrine:database:create --if-not-exists --env=prod'
+                    sh 'php bin/console doctrine:migrations:migrate --no-interaction --env=prod'
                 }
             }
         }
 
-        // Stage 6: Run Database Migrations
-        stage('Run Database Migrations') {
-            steps {
-                dir("${DEPLOY_DIR}") {
-                    sh '''
-                    php bin/console doctrine:database:create --if-not-exists || true
-                    php bin/console doctrine:migrations:migrate --no-interaction
-                    '''
-                }
-            }
-        }
-
-        // Stage 7: Clear and Warmup Cache
-        stage('Clear and Warmup Cache') {
+        stage('Nettoyage du cache') {
             steps {
                 dir("${DEPLOY_DIR}") {
                     sh 'php bin/console cache:clear --env=prod'
@@ -80,25 +55,22 @@ pipeline {
             }
         }
 
-        // Stage 8: Deploy Application
-        stage('Deploy Application') {
+        stage('Déploiement') {
             steps {
-                sh '''
-                mkdir -p /var/www/html/"${DEPLOY_DIR}"
-                cp -rT "${DEPLOY_DIR}" /var/www/html/"${DEPLOY_DIR}"
-                chown -R jenkins:jenkins /var/www/html/"${DEPLOY_DIR}"
-                chmod -R 775 /var/www/html/"${DEPLOY_DIR}/var"
-                '''
+                sh "rm -rf /var/www/html/${DEPLOY_DIR}" // Supprime le dossier de destination
+                sh "mkdir /var/www/html/${DEPLOY_DIR}" // Recréé le dossier de destination
+                sh "cp -rT ${DEPLOY_DIR} /var/www/html/${DEPLOY_DIR}"
+                sh "chmod -R 775 /var/www/html/${DEPLOY_DIR}/var"
             }
         }
     }
 
     post {
         success {
-            echo '✅ Deployment successful!'
+            echo 'Déploiement réussi !'
         }
         failure {
-            echo '❌ Deployment failed.'
+            echo 'Erreur lors du déploiement.'
         }
     }
 }

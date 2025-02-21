@@ -17,12 +17,13 @@ final class AdminControllerTest extends WebTestCase
         $this->client = static::createClient();
         $this->entityManager = $this->client->getContainer()->get('doctrine')->getManager();
     
-        // Fetch admin user and log in
+        // Fetch admin user from the database
         $adminUser = $this->entityManager->getRepository(User::class)->findOneBy(['email' => 'admin@example.com']);
-        if ($adminUser) {
-            $this->client->loginUser($adminUser);
+    
+        if (!$adminUser) {
+            $this->markTestSkipped('No admin user found in database. Skipping test.');
         } else {
-            $this->markTestSkipped('Admin user not found, skipping test.');
+            $this->client->loginUser($adminUser);
         }
     }
     

@@ -26,7 +26,7 @@ class Review
     #[Groups(['review:read', 'review:write'])]
     #[Assert\Range(
         min: 1,
-        max: 5,
+        max: 10,
         notInRangeMessage: 'Rating must be between {{ min }} and {{ max }}.'
     )]
     private $ratingGiven;
@@ -40,7 +40,7 @@ class Review
     #[Groups(['review:read', 'review:write'])]
     private $film;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "reviews")]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['review:read', 'review:write'])]
     private $user;
@@ -48,8 +48,9 @@ class Review
     /**
      * @var Collection<int, Comment>
      */
-    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'review')]
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'review', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $comments;
+    
 
     public function __construct()
     {

@@ -12,11 +12,11 @@ class Favorites
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "favorites")]
     #[ORM\JoinColumn(nullable: false)]
     private $user;
 
-    #[ORM\ManyToOne(targetEntity: Film::class)]
+    #[ORM\ManyToOne(targetEntity: Film::class, inversedBy: "favorites")]
     #[ORM\JoinColumn(nullable: false)]
     private $film;
 
