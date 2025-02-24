@@ -36,11 +36,13 @@ pipeline {
                 }
             }
         }
-
+        
+        // NEW: Reset Database Stage
         stage('Reset Database') {
             steps {
                 dir("${DEPLOY_DIR}") {
-                    // Drop the database if it exists
+                    // Force drop the database even if it exists.
+                    // The "|| true" ensures that the pipeline continues if the drop fails (e.g., if the DB does not exist).
                     sh 'php bin/console doctrine:database:drop --force --env=prod || true'
                     // Create a fresh database
                     sh 'php bin/console doctrine:database:create --env=prod'
@@ -68,7 +70,7 @@ pipeline {
         stage('Déploiement') {
             steps {
                 sh "rm -rf /var/www/html/${DEPLOY_DIR}" // Supprime le dossier de destination
-                sh "mkdir /var/www/html/${DEPLOY_DIR}" // Recréé le dossier de destination
+                sh "mkdir /var/www/html/${DEPLOY_DIR}"   // Recréé le dossier de destination
                 sh "cp -rT ${DEPLOY_DIR} /var/www/html/${DEPLOY_DIR}"
                 sh "chmod -R 775 /var/www/html/${DEPLOY_DIR}/var"
             }
