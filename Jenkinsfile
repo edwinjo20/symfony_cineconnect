@@ -8,6 +8,12 @@ pipeline {
     }
 
     stages {
+        stage('Clean Workspace') {
+            steps {
+                cleanWs() // Clean the Jenkins workspace before starting the build
+            }
+        }
+
         stage('Cloner le dépôt') {
             steps {
                 sh "rm -rf ${DEPLOY_DIR}" // Nettoyage du précédent build
