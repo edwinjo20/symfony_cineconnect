@@ -31,21 +31,8 @@ pipeline {
                     APP_DEBUG=1
                     DATABASE_URL=mysql://root:routitop@127.0.0.1:3306/${DEPLOY_DIR}?serverVersion=8.3.0&charset=utf8mb4
                     """.stripIndent()
-                    
+
                     writeFile file: "${DEPLOY_DIR}/.env.local", text: envLocal
-                }
-            }
-        }
-        
-        // NEW: Reset Database Stage
-        stage('Reset Database') {
-            steps {
-                dir("${DEPLOY_DIR}") {
-                    // Force drop the database even if it exists.
-                    // The "|| true" ensures that the pipeline continues if the drop fails (e.g., if the DB does not exist).
-                    sh 'php bin/console doctrine:database:drop --force --env=prod || true'
-                    // Create a fresh database
-                    sh 'php bin/console doctrine:database:create --env=prod'
                 }
             }
         }
@@ -53,6 +40,7 @@ pipeline {
         stage('Migration de la base de données') {
             steps {
                 dir("${DEPLOY_DIR}") {
+                    sh 'php bin/console doctrine:database:create --if-not-exists --env=prod'
                     sh 'php bin/console doctrine:migrations:migrate --no-interaction --env=prod'
                 }
             }
@@ -70,7 +58,7 @@ pipeline {
         stage('Déploiement') {
             steps {
                 sh "rm -rf /var/www/html/${DEPLOY_DIR}" // Supprime le dossier de destination
-                sh "mkdir /var/www/html/${DEPLOY_DIR}"   // Recréé le dossier de destination
+                sh "mkdir /var/www/html/${DEPLOY_DIR}" // Recréé le dossier de destination
                 sh "cp -rT ${DEPLOY_DIR} /var/www/html/${DEPLOY_DIR}"
                 sh "chmod -R 775 /var/www/html/${DEPLOY_DIR}/var"
             }
