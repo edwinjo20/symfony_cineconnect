@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h2>Reset Your Password</h2>
+
+    {% for message in app.flashes('danger') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    <form method="POST">
+        <input type="password" name="password" placeholder="New Password" required>
+        <button type="submit">Reset Password</button>
+    </form>
+{% endblock %}

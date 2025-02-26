@@ -8,6 +8,8 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
+use Symfony\Component\Security\Http\Authenticator\Passport\Badge\CsrfTokenBadge;
+use Symfony\Component\Security\Http\Authenticator\Passport\Badge\RememberMeBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordCredentials;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
@@ -30,30 +32,31 @@ class LoginFormAuthenticator extends AbstractAuthenticator implements Authentica
 
     public function authenticate(Request $request): Passport
     {
-        $email = $request->request->get('_username'); // Use '_username' as the form field name
-        $password = $request->request->get('_password'); // Use '_password' as the form field name
+        $email = $request->request->get('_email'); // Ensure it matches the form field
+        $password = $request->request->get('_password');
 
         return new Passport(
-            new UserBadge($email), // Use the email as the user identifier
-            new PasswordCredentials($password) // Use the password for credentials
+            new UserBadge($email),
+            new PasswordCredentials($password),
+            [
+                new CsrfTokenBadge('authenticate', $request->request->get('_csrf_token')),
+                new RememberMeBadge()
+            ]
         );
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
-        // Redirect to the homepage or any other route after successful login
-        return new RedirectResponse($this->urlGenerator->generate('app_film_index'));
+        return new RedirectResponse($this->urlGenerator->generate('app_film_index')); // Redirect after successful login
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
-        // Return a response for failed authentication
-        return new Response('Authentication failed.', Response::HTTP_UNAUTHORIZED);
+        return new RedirectResponse($this->urlGenerator->generate('app_login'));
     }
 
     public function start(Request $request, AuthenticationException $authException = null): Response
     {
-        // Redirect to the login page if authentication is required
-        return new RedirectResponse('/login');
+        return new RedirectResponse($this->urlGenerator->generate('app_login'));
     }
 }
