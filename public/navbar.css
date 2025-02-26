@@ -104,15 +104,16 @@ html, body {
     background-color: #E9DEC8;
     color: rgb(0, 0, 0);
 }
+
+/* Movie card styling */
 .movie-card {
     background-color: #1e293b; /* Dark navy background */
     border-radius: 15px;
     overflow: hidden;
     transition: transform 0.3s ease-in-out;
+    position: relative; /* Add this to enable absolute positioning */
 }
-.card-text {
-    color: #9EB3C2;
-}
+
 .movie-card:hover {
     transform: translateY(-15px);
 }
@@ -142,6 +143,8 @@ html, body {
 .tables-hover tbody tr:hover {
     background-color: rgba(255, 255, 255, 0.1);
 }
+
+/* Rating stars */
 .rating {
     display: flex;
     flex-direction: row-reverse;
@@ -165,3 +168,26 @@ html, body {
 .rating label:hover ~ label {
     color: gold;
 }
+
+/* Favorite button positioning */
+.btn-link {
+    color: #ffffff;
+    font-size: 1.5rem;
+    position: absolute;
+    top: 10px; /* Move it down a bit from the top */
+    right: 10px; /* Align to the right */
+    z-index: 5;
+}
+
+.position-absolute {
+    position: absolute;
+}
+
+.top-0 {
+    top: 10px; /* Adjust top position */
+}
+
+.end-0 {
+    right: 10px; /* Adjust right position */
+}
+

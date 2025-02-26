@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Profile{% endblock %}
+
+{% block body %}
+
+<h2 class="text-center text-light">Profile</h2>
+
+<!-- Display User Information -->
+<div class="card shadow-lg mt-4">
+    <div class="card-body">
+        <h5 class="card-title text-center">Welcome, {{ user.username }}</h5>
+        <p class="card-text text-center">Email: {{ user.email }}</p>
+        
+        <!-- Add an Edit Profile Button -->
+        <div class="text-center mt-4">
+            <a class="btn btn-warning" href="{{ path('app_profile_edit') }}">Edit Profile</a>
+        </div>
+    </div>
+</div>
+
+<!-- Display the user's favorite films -->
+<h6 class="mt-4 text-light">Your Favorite Films</h6>
+{% if favorites is not empty %}
+    <ul class="list-group">
+        {% for favorite in favorites %}
+            <li class="list-group-item">
+                <strong>{{ favorite.film.title }}</strong> - {{ favorite.film.genre.name }}
+                <!-- Add a remove button for each favorite -->
+                <form action="{{ path('app_favorites_delete', {'id': favorite.id}) }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-danger btn-sm float-end">Remove from Favorites</button>
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ favorite.id) }}">
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No favorite films found.</p>
+{% endif %}
+
+{% endblock %}

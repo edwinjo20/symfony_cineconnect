@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Profile{% endblock %}
+
+{% block body %}
+
+<h2 class="text-center text-light">Edit Profile</h2>
+
+<!-- Profile Edit Form -->
+<div class="card shadow-lg mt-4">
+    <div class="card-body">
+        {{ form_start(form) }}
+        
+        <!-- Display the form fields -->
+        {{ form_row(form.username) }}
+        {{ form_row(form.email) }}
+        {{ form_row(form.password) }} <!-- Password is optional, so it will show if provided -->
+        
+        <button class="btn btn-primary" type="submit">Update Profile</button>
+        
+        {{ form_end(form) }}
+    </div>
+</div>
+
+{% endblock %}

@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Favorites;
 use App\Form\FavoritesType;
+use App\Repository\FilmRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,26 +24,36 @@ final class FavoritesController extends AbstractController{
             'favorites' => $favorites,
         ]);
     }
-
-    #[Route('/new', name: 'app_favorites_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/favorites/new', name: 'app_favorites_new', methods: ['GET', 'POST'])]
+    public function addFavorite(Request $request, EntityManagerInterface $entityManager, FilmRepository $filmRepository): Response
     {
-        $favorite = new Favorites();
-        $form = $this->createForm(FavoritesType::class, $favorite);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($favorite);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_favorites_index', [], Response::HTTP_SEE_OTHER);
+        // Get the logged-in user
+        $user = $this->getUser();
+        
+        // Get the film based on the passed film ID
+        $filmId = $request->query->get('filmId');
+        $film = $filmRepository->find($filmId);
+        
+        if (!$film) {
+            $this->addFlash('error', 'Film not found');
+            return $this->redirectToRoute('app_film_index');
         }
-
-        return $this->render('favorites/new.html.twig', [
-            'favorite' => $favorite,
-            'form' => $form,
-        ]);
+        
+        // Create a new Favorites entity
+        $favorite = new Favorites();
+        $favorite->setUser($user);
+        $favorite->setFilm($film);
+        
+        // Persist the favorite to the database
+        $entityManager->persist($favorite);
+        $entityManager->flush();
+        
+        // Add a success message and redirect
+        $this->addFlash('success', 'Film added to your favorites!');
+        return $this->redirectToRoute('app_film_index');
     }
+    
+    
 
     #[Route('/{id}', name: 'app_favorites_show', methods: ['GET'])]
     public function show(Favorites $favorite): Response
@@ -73,11 +84,14 @@ final class FavoritesController extends AbstractController{
     #[Route('/{id}', name: 'app_favorites_delete', methods: ['POST'])]
     public function delete(Request $request, Favorites $favorite, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$favorite->getId(), $request->getPayload()->getString('_token'))) {
+        // CSRF token validation
+        if ($this->isCsrfTokenValid('delete'.$favorite->getId(), $request->request->get('_token'))) {
             $entityManager->remove($favorite);
             $entityManager->flush();
+            
+            $this->addFlash('success', 'Favorite removed successfully.');
         }
-
-        return $this->redirectToRoute('app_favorites_index', [], Response::HTTP_SEE_OTHER);
+    
+        return $this->redirectToRoute('app_profile'); // Redirect back to profile page
     }
-}
+}    
