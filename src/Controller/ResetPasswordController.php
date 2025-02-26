@@ -49,14 +49,12 @@ class ResetPasswordController extends AbstractController
                 return $this->redirectToRoute('app_forgot_password_request');
             }
 
-            // ✅ Generate absolute URL for reset link
             $resetUrl = $this->generateUrl(
                 'app_reset_password',
                 ['token' => $resetToken->getToken()],
                 UrlGeneratorInterface::ABSOLUTE_URL
             );
 
-            // ✅ Send Reset Email
             $emailMessage = (new Email())
                 ->from('edwinjones.m1980@gmail.com')  // Ensure this email is authorized in your SMTP settings
                 ->to($user->getEmail())
@@ -104,12 +102,10 @@ class ResetPasswordController extends AbstractController
                 return $this->redirectToRoute('app_reset_password', ['token' => $token]);
             }
 
-            // ✅ Hash new password and save
             $user->setPassword($passwordHasher->hashPassword($user, $newPassword));
             $this->entityManager->persist($user);
             $this->entityManager->flush();
 
-            // ✅ Remove the reset request after successful reset
             $this->resetPasswordHelper->removeResetRequest($token);
 
             $this->addFlash('success', 'Password reset successful. You can now log in.');

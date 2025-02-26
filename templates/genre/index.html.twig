@@ -1,35 +1,60 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Genre index{% endblock %}
+{% block title %}Genre Index{% endblock %}
 
 {% block body %}
-    <h1>Genre index</h1>
+<div class="container mt-5">
+    <h1 class="text-center mb-4 text-light">Genre List</h1>
 
-    <table class="tables">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Name</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for genre in genres %}
-            <tr>
-                <td>{{ genre.id }}</td>
-                <td>{{ genre.name }}</td>
-                <td>
-                    <a href="{{ path('app_genre_show', {'id': genre.id}) }}">show</a>
-                    <a href="{{ path('app_genre_edit', {'id': genre.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="3">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <div class="card shadow-lg p-4 bg-dark text-light">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 style="color: rgb(169, 128, 186);">Genres</h2>
+            <a href="{{ path('app_genre_new') }}" class="btn" style="background-color:rgb(102, 19, 138); color: white;">
+                <i class="fas fa-plus"></i> Add Genre
+            </a>
+        </div>
 
-    <a href="{{ path('app_genre_new') }}">Create new</a>
+        <div class="table-responsive">
+            <table class="table table-dark table-hover rounded">
+                <thead class="table-success text-center">
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for genre in genres %}
+                        <tr>
+                            <td class="fw-bold">{{ genre.id }}</td>
+                            <td class="fw-bold">{{ genre.name }}</td>
+                            <td class="text-center">
+                                <a href="{{ path('app_genre_edit', {'id': genre.id}) }}" class="btn btn-sm" style="background-color:rgb(102, 19, 138); color: white;">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <form action="{{ path('app_genre_delete', {'id': genre.id}) }}" method="POST" class="d-inline">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ genre.id) }}">
+                                    <button type="submit" class="btn btn-sm" style="background-color:rgb(138, 69, 168); color: white;">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">No genres found</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 🔙 Back to Admin Dashboard -->
+    <div class="text-center mt-4">
+        <a href="{{ path('admin_dashboard') }}" class="btn btn-outline-light">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
 {% endblock %}

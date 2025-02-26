@@ -11,7 +11,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/genre')]
-final class GenreController extends AbstractController{
+final class GenreController extends AbstractController
+{
     #[Route(name: 'app_genre_index', methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager): Response
     {
@@ -40,7 +41,7 @@ final class GenreController extends AbstractController{
 
         return $this->render('genre/new.html.twig', [
             'genre' => $genre,
-            'form' => $form,
+            'form' => $form->createView(), // ✅ FIXED: Ensure createView() is used
         ]);
     }
 
@@ -66,14 +67,14 @@ final class GenreController extends AbstractController{
 
         return $this->render('genre/edit.html.twig', [
             'genre' => $genre,
-            'form' => $form,
+            'form' => $form->createView(), // ✅ FIXED: Ensure createView() is used
         ]);
     }
 
     #[Route('/{id}', name: 'app_genre_delete', methods: ['POST'])]
     public function delete(Request $request, Genre $genre, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$genre->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $genre->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($genre);
             $entityManager->flush();
         }

@@ -3,11 +3,42 @@
 {% block title %}Edit Film{% endblock %}
 
 {% block body %}
-    <h1>Edit Film</h1>
+<div class="container mt-5">
+    <div class="card shadow-lg p-4 bg-dark text-light">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">Edit Film</h2>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% for field in form %}
+                    <div class="mb-3">
+                        {{ form_label(field, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(field, {
+                            'attr': {'class': 
+                                field.vars.block_prefixes|last == 'checkbox' ? 'form-check-input' :
+                                field.vars.block_prefixes|last == 'textarea' ? 'form-control' :
+                                field.vars.block_prefixes|last == 'choice' ? 'form-select' :
+                                'form-control'
+                            }
+                        }) }}
+                        {{ form_errors(field) }}
+                    </div>
+                {% endfor %}
 
-    {{ include('film/_form.html.twig', {'button_label': 'Update'}) }}
+                <div class="text-center mt-4">
+                    <button class="btn btn-success">
+                        <i class="fas fa-save"></i> Update Film
+                    </button>
+                </div>
+            </form>
 
-    <a href="{{ path('app_film_index') }}">back to list</a>
-
-    {{ include('film/_delete_form.html.twig') }}
+            <div class="d-flex justify-content-between mt-3">
+                <a href="{{ path('app_film_index') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to List
+                </a>
+                {{ include('film/_delete_form.html.twig') }}
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
