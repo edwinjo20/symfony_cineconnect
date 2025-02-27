@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Favorites;
+use App\Entity\Film;
 use App\Form\FavoritesType;
 use App\Repository\FilmRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -24,37 +25,44 @@ final class FavoritesController extends AbstractController{
             'favorites' => $favorites,
         ]);
     }
-    #[Route('/favorites/new', name: 'app_favorites_new', methods: ['GET', 'POST'])]
-    public function addFavorite(Request $request, EntityManagerInterface $entityManager, FilmRepository $filmRepository): Response
+    #[Route('/favorites/new', name: 'app_favorites_new', methods: ['POST'])]
+    public function addFavorite(Request $request, EntityManagerInterface $entityManager): Response
     {
-        // Get the logged-in user
         $user = $this->getUser();
-        
-        // Get the film based on the passed film ID
-        $filmId = $request->query->get('filmId');
-        $film = $filmRepository->find($filmId);
-        
+        $filmId = $request->request->get('filmId'); // Fetch the filmId from the POST request
+    
+        // Ensure the film exists before adding to favorites
+        $film = $entityManager->getRepository(Film::class)->find($filmId);
+    
         if (!$film) {
             $this->addFlash('error', 'Film not found');
             return $this->redirectToRoute('app_film_index');
         }
-        
-        // Create a new Favorites entity
+    
+        // Check if the movie is already in the user's favorites
+        $existingFavorite = $entityManager->getRepository(Favorites::class)->findOneBy([
+            'user' => $user,
+            'film' => $film
+        ]);
+    
+        if ($existingFavorite) {
+            $this->addFlash('info', 'This film is already in your favorites!');
+            return $this->redirectToRoute('app_film_show', ['id' => $film->getId()]);
+        }
+    
+        // Create the Favorites entity
         $favorite = new Favorites();
         $favorite->setUser($user);
         $favorite->setFilm($film);
-        
+    
         // Persist the favorite to the database
         $entityManager->persist($favorite);
         $entityManager->flush();
-        
-        // Add a success message and redirect
-        $this->addFlash('success', 'Film added to your favorites!');
-        return $this->redirectToRoute('app_film_index');
+    
+        $this->addFlash('success', 'Film added to favorites!');
+        return $this->redirectToRoute('app_film_show', ['id' => $film->getId()]);
     }
     
-    
-
     #[Route('/{id}', name: 'app_favorites_show', methods: ['GET'])]
     public function show(Favorites $favorite): Response
     {

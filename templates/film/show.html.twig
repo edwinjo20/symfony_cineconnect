@@ -13,6 +13,19 @@
             <p class="card-text text-secondary">{{ film.description }}</p>
             <p><strong>Release Date:</strong> {{ film.releaseDate|date('Y-m-d') }}</p>
             <p><strong>Genre:</strong> {{ film.genre.name }}</p>
+
+            <!-- Add to Favorites Button - Only visible if user is logged in -->
+            {% if app.user %}
+                <form action="{{ path('app_favorites_new') }}" method="POST">
+                    <input type="hidden" name="filmId" value="{{ film.id }}">
+                    <button type="submit" class="btn btn-link">
+                        <i class="fas fa-plus-circle"></i> Add to Favorites
+                    </button>
+                </form>
+            {% endif %}
+
+
+
         </div>
     </div>
 
@@ -108,7 +121,7 @@
         {% else %}
             <p class="text-muted">
                 You need to be logged in to leave a review. 
-                <a href="{{ path('app_login') }}">Login here</a>.
+                <a href="{{ path('app_login') }}">Login here</a> to add a review.
             </p>
         {% endif %}
     </div>
