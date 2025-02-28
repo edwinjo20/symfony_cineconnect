@@ -5,6 +5,7 @@ pipeline {
         GIT_REPO = "https://github.com/edwinjo20/symfony_cineconnect.git"
         GIT_BRANCH = "main"
         DEPLOY_DIR = "web005"
+        DEPLOY_PATH = "/var/www/html/${DEPLOY_DIR}"
         DB_NAME = "web005"
         DB_USER = "root"
         DB_PASS = "routitop"
@@ -50,7 +51,6 @@ pipeline {
                 dir("${DEPLOY_DIR}") {
                     echo "🔄 Vérification et mise à jour de la base de données..."
 
-                    // Vérifier si la colonne existe avant de migrer
                     sh """
                         set -e
                         php bin/console doctrine:migrations:sync-metadata-storage --env=prod
@@ -80,15 +80,30 @@ pipeline {
             }
         }
 
-            stage('Déploiement') {
-                steps {
-                    sh "sudo rm -rf /var/www/html/${DEPLOY_DIR}" // Force remove
-                    sh "sudo mkdir -p /var/www/html/${DEPLOY_DIR}" // Ensure directory exists
-                    sh "sudo cp -rT ${DEPLOY_DIR} /var/www/html/${DEPLOY_DIR}" // Copy files
-                    sh "sudo chmod -R 775 /var/www/html/${DEPLOY_DIR}/var" // Set correct permissions
-                }
-            }
+        stage('Déploiement') {
+            steps {
+                echo "🚀 Déploiement en cours..."
 
+                sh """
+                    # Vérifier si le dossier existe
+                    if [ ! -d "${DEPLOY_PATH}" ]; then
+                        echo "📂 Création du dossier de déploiement..."
+                        mkdir -p ${DEPLOY_PATH}
+                    fi
+
+                    # Changer les permissions pour Jenkins
+                    echo "🔧 Vérification des permissions..."
+                    chown -R \$(whoami):\$(whoami) ${DEPLOY_PATH}
+
+                    # Copier les fichiers avec rsync pour éviter de supprimer le cache
+                    echo "📂 Synchronisation des fichiers..."
+                    rsync -av --delete ${DEPLOY_DIR}/ ${DEPLOY_PATH}/
+
+                    # Régler les permissions pour éviter les erreurs d'accès
+                    chmod -R 775 ${DEPLOY_PATH}/var
+                """
+            }
+        }
     }
 
     post {
