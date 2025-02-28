@@ -10,13 +10,13 @@ security:
 
     firewalls:
         dev:
-            pattern: ^/(_(profiler|wdt)|css|images|js)/ # Disable security for these routes
+            pattern: ^/(_(profiler|wdt)|css|images|js)/ 
             security: false
 
-        # Firewall for web-based login (CSRF + session-based)
         main:
             lazy: true
             provider: app_user_provider
+            user_checker: App\Security\UserChecker  # ✅ Add this line
             form_login:
                 login_path: app_login
                 check_path: app_login
@@ -34,15 +34,13 @@ security:
                 - App\Security\LoginFormAuthenticator
             entry_point: App\Security\LoginFormAuthenticator
 
-        # Firewall for API routes using JWT
         api:
             pattern: ^/api/
             provider: app_user_provider
             stateless: true
-            jwt: ~  # This should be the correct configuration for JWT
+            jwt: ~
 
     access_control:
-        - { path: ^/api/login, roles: PUBLIC_ACCESS }  # Allow public access to the login route
-        - { path: ^/api, roles: ROLE_USER }  # Require ROLE_USER for all other API routes
-        - { path: ^/api/comments, roles: ROLE_ADMIN }  # Require ROLE_ADMIN for comment routes
-        # - { path: ^/comment, roles: ROLE_USER }  # Require ROLE_USER for comment routes
+        - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api, roles: ROLE_USER }
+        - { path: ^/api/comments, roles: ROLE_ADMIN }

@@ -4,7 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Film;
 use App\Entity\Comment;
-use App\Entity\genre;
+use App\Entity\Genre;
+use App\Entity\User;
 use App\Form\FilmType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -12,26 +13,27 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 #[Route('/admin')]
 final class AdminController extends AbstractController
 {
     /**
-     * 📌 Admin Dashboard - Displays all films and unapproved comments
+     * 📌 Admin Dashboard - Displays all films, comments, and users
      */
     #[Route('/', name: 'admin_dashboard', methods: ['GET'])]
     #[IsGranted('ROLE_ADMIN')] // Ensures only admins can access
-
     public function dashboard(EntityManagerInterface $entityManager): Response
     {
         $films = $entityManager->getRepository(Film::class)->findAll();
-        $comments = $entityManager->getRepository(Comment::class)->findBy(['approved' => false]); // Only unapproved comments
-        $genres = $entityManager->getRepository(Genre::class)->findAll(); // Fetch genres
+        $comments = $entityManager->getRepository(Comment::class)->findBy(['approved' => false]);
+        $genres = $entityManager->getRepository(Genre::class)->findAll();
+        $users = $entityManager->getRepository(User::class)->findAll(); // Fetch users
+
         return $this->render('admin/dashboard.html.twig', [
             'films' => $films,
             'comments' => $comments,
             'genres' => $genres,
+            'users' => $users, // Pass users to template
         ]);
     }
 
@@ -52,10 +54,10 @@ final class AdminController extends AbstractController
             if ($file) {
                 $newFilename = uniqid() . '.' . $file->guessExtension();
                 $file->move(
-                    $this->getParameter('images_directory'), // Upload directory
+                    $this->getParameter('images_directory'), 
                     $newFilename
                 );
-                $film->setImagePath($newFilename); // Assign image path to film
+                $film->setImagePath($newFilename);
             }
 
             $entityManager->persist($film);
@@ -91,7 +93,7 @@ final class AdminController extends AbstractController
                 $film->setImagePath($newFilename);
             }
 
-            $entityManager->flush(); // Save updated film
+            $entityManager->flush();
             return $this->redirectToRoute('admin_dashboard');
         }
 
@@ -124,7 +126,6 @@ final class AdminController extends AbstractController
     {
         $comment->setApproved(true);
         $entityManager->flush();
-
         return $this->redirectToRoute('admin_dashboard');
     }
 
@@ -137,7 +138,48 @@ final class AdminController extends AbstractController
     {
         $entityManager->remove($comment);
         $entityManager->flush();
+        return $this->redirectToRoute('admin_dashboard');
+    }
 
+    /**
+     * 🔼 Promote a user to ADMIN
+     */
+    #[Route('/user/{id}/promote', name: 'admin_promote_user', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function promoteUser(User $user, EntityManagerInterface $entityManager): Response
+    {
+        $user->setRoles(['ROLE_ADMIN']);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'User promoted to Admin.');
+        return $this->redirectToRoute('admin_dashboard');
+    }
+
+    /**
+     * 🚫 Block a user (Prevent login)
+     */
+    #[Route('/user/{id}/block', name: 'admin_block_user', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function blockUser(User $user, EntityManagerInterface $entityManager): Response
+    {
+        $user->setIsBlocked(true);
+        $entityManager->flush();
+
+        $this->addFlash('warning', 'User has been blocked.');
+        return $this->redirectToRoute('admin_dashboard');
+    }
+
+    /**
+     * ✅ Unblock a user
+     */
+    #[Route('/user/{id}/unblock', name: 'admin_unblock_user', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function unblockUser(User $user, EntityManagerInterface $entityManager): Response
+    {
+        $user->setIsBlocked(false);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'User has been unblocked.');
         return $this->redirectToRoute('admin_dashboard');
     }
 }

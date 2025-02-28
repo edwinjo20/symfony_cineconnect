@@ -30,54 +30,53 @@ class RegistrationController extends AbstractController
         $form->handleRequest($request);
     
         if ($form->isSubmitted() && $form->isValid()) {
-            // Ensure username is set
-            $user->setUsername($form->get('username')->getData());
+            // Normalize and check email
+            $userEmail = strtolower($form->get('email')->getData());
+            $existingUserByEmail = $entityManager->getRepository(User::class)->findOneBy(['email' => $userEmail]);
+            if ($existingUserByEmail) {
+                $this->addFlash('error', 'Registration failed. Please try again.');
+                return $this->redirectToRoute('app_register');
+            }
     
-            // Check if the username already exists
+            // Normalize and check username
+            $user->setUsername($form->get('username')->getData());
             $existingUserByUsername = $entityManager->getRepository(User::class)->findOneBy(['username' => $user->getUsername()]);
             if ($existingUserByUsername) {
                 $this->addFlash('error', 'Username is already taken.');
                 return $this->redirectToRoute('app_register');
             }
     
-            // Check if the email already exists
-            $existingUserByEmail = $entityManager->getRepository(User::class)->findOneBy(['email' => $user->getEmail()]);
-            if ($existingUserByEmail) {
-                $this->addFlash('error', 'Email is already registered.');
-                return $this->redirectToRoute('app_register');
-            }
-    
-            // Securely hash the password
+            // Hash password securely
             $user->setPassword(
-                $userPasswordHasher->hashPassword(
-                    $user,
-                    $form->get('plainPassword')->getData()
-                )
+                $userPasswordHasher->hashPassword($user, $form->get('plainPassword')->getData())
             );
     
-            // Assign default role to user
-            $user->setRoles(['ROLE_USER']);
+            // Assign roles (Admin if email matches)
+            $adminEmails = ['edwinjones.m@gmail.com', 'edwinjones.m1980@gmail.com'];
+            $user->setRoles(in_array($userEmail, $adminEmails, true) ? ['ROLE_ADMIN'] : ['ROLE_USER']);
     
+            // Persist user
             $entityManager->persist($user);
             $entityManager->flush();
     
-            // Send email confirmation link
+            // Send verification email
             $this->emailVerifier->sendEmailConfirmation('app_verify_email', $user,
                 (new TemplatedEmail())
                     ->from(new Address('mailer@cineconnect.com', 'CineConnect'))
-                    ->to((string) $user->getEmail())
+                    ->to($userEmail)
                     ->subject('Please Confirm Your Email')
                     ->htmlTemplate('registration/confirmation_email.html.twig')
             );
     
-            // Redirect to the film list after successful registration
-            return $this->redirectToRoute('app_film_index');
+            // Redirect to login instead of films
+            return $this->redirectToRoute('app_login');
         }
     
         return $this->render('registration/register.html.twig', [
             'registrationForm' => $form->createView(),
         ]);
     }
+    
     
     #[Route('/verify/email', name: 'app_verify_email')]
     public function verifyUserEmail(Request $request, TranslatorInterface $translator): Response

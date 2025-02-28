@@ -31,6 +31,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string')]
     #[Groups(['user:read', 'user:write'])]
     private $password;
+    #[ORM\Column(type: 'boolean')]
+    private bool $isBlocked = false;
 
     #[ORM\Column(type: 'json')]
     #[Groups(['user:read', 'user:write'])]
@@ -209,6 +211,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $favorite->setUser(null);
             }
         }
+        return $this;
+    }
+    public function isBlocked(): bool
+    {
+        return $this->isBlocked;
+    }
+    public function setIsBlocked(bool $isBlocked): self
+    {
+        $this->isBlocked = $isBlocked;
         return $this;
     }
 }
