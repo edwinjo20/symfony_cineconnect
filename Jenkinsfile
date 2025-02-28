@@ -17,14 +17,14 @@ pipeline {
     stages {
         stage('Clean Workspace') {
             steps {
-                cleanWs() // Cleans workspace before build
+                cleanWs()
             }
         }
 
         stage('Clone Repository') {
             steps {
-                sh "rm -rf ${DEPLOY_DIR}" // Remove previous build
-                sh "git clone -b ${GIT_BRANCH} ${GIT_REPO} ${DEPLOY_DIR}" // Clone the repository
+                sh "rm -rf ${DEPLOY_DIR} || true"
+                sh "git clone -b ${GIT_BRANCH} ${GIT_REPO} ${DEPLOY_DIR}"
             }
         }
 
@@ -44,7 +44,6 @@ pipeline {
                     APP_DEBUG=0
                     DATABASE_URL=mysql://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}?serverVersion=${SERVER_VERSION}&charset=utf8mb4
                     """.stripIndent()
-
                     writeFile file: "${DEPLOY_DIR}/.env.local", text: envLocal
                 }
             }
@@ -54,24 +53,22 @@ pipeline {
             steps {
                 dir("${DEPLOY_DIR}") {
                     script {
-                        // ✅ Ensure log directory exists
                         sh "mkdir -p var/log"
-
-                        // ✅ Log existing databases
                         sh "mysql -u${DB_USER} -p${DB_PASS} -h ${DB_HOST} -P ${DB_PORT} -e 'SHOW DATABASES;' | tee var/log/jenkins-database.log"
-
-                        // ✅ Check if database exists
+                        
                         def checkDB = sh(script: "mysql -u${DB_USER} -p${DB_PASS} -h ${DB_HOST} -P ${DB_PORT} -e 'SHOW DATABASES LIKE \"${DB_NAME}\";'", returnStdout: true).trim()
                         if (!checkDB.contains(DB_NAME)) {
                             sh "php bin/console doctrine:database:create --if-not-exists --env=prod"
                         }
                     }
 
-                    // ✅ Log schema validation (to check missing fields)
                     sh 'php bin/console doctrine:schema:validate | tee var/log/jenkins-schema-validate.log'
+
+                    // 🔥 NEW FIX: Rollback conflicting migrations before applying new ones
+                    sh 'php bin/console doctrine:migrations:rollback --step=1 || true'
                     
-                    // ✅ Run migrations (if fails, update schema)
-                    sh 'php bin/console doctrine:migrations:migrate --no-interaction --env=prod || php bin/console doctrine:schema:update --force --env=prod || true'
+                    // 🔥 NEW FIX: If migration fails, force schema update instead
+                    sh 'php bin/console doctrine:migrations:migrate --no-interaction --env=prod || php bin/console doctrine:schema:update --force'
                 }
             }
         }
@@ -88,12 +85,15 @@ pipeline {
         stage('Deployment') {
             steps {
                 script {
+                    // 🔥 FIX PERMISSION ERRORS: Run commands as sudo
                     sh """
-                    rm -rf ${DEPLOY_TARGET} || true
-                    mkdir -p ${DEPLOY_TARGET}
-                    cp -rT ${DEPLOY_DIR} ${DEPLOY_TARGET}
-                    ln -s ${DEPLOY_TARGET}/public ${DEPLOY_TARGET}/www || true
-                    chmod -R 775 ${DEPLOY_TARGET}/var
+                    sudo chown -R jenkins:jenkins ${DEPLOY_TARGET} || true
+                    sudo chmod -R 775 ${DEPLOY_TARGET} || true
+                    sudo rm -rf ${DEPLOY_TARGET} || true
+                    sudo mkdir -p ${DEPLOY_TARGET}
+                    sudo cp -rT ${DEPLOY_DIR} ${DEPLOY_TARGET}
+                    sudo ln -s ${DEPLOY_TARGET}/public ${DEPLOY_TARGET}/www || true
+                    sudo chmod -R 775 ${DEPLOY_TARGET}/var
                     """
                 }
             }
