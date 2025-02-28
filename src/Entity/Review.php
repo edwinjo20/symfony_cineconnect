@@ -35,27 +35,27 @@ class Review
     #[Groups(['review:read', 'review:write'])]
     private $publicationDate;
 
+    // ✅ Corrected Film relationship with CASCADE DELETE
     #[ORM\ManyToOne(targetEntity: Film::class, inversedBy: 'reviews')]
-    #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['review:read', 'review:write'])]
+    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     private $film;
+    
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "reviews")]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['review:read', 'review:write'])]
-    private $user;
+    private ?User $user = null;
 
     /**
      * @var Collection<int, Comment>
      */
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'review', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $comments;
-    
 
     public function __construct()
     {
         $this->comments = new ArrayCollection();
-        $this->publicationDate = new \DateTime(); // Automatically set the publication date when created
+        $this->publicationDate = new \DateTime(); // Automatically set publication date
     }
 
     public function getId(): ?int

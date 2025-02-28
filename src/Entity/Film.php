@@ -43,13 +43,13 @@ class Film
     /**
      * @var Collection<int, Review>
      */
-    #[ORM\OneToMany(targetEntity: Review::class, mappedBy: 'film')]
+    #[ORM\OneToMany(targetEntity: Review::class, mappedBy: 'film', cascade: ['remove'], orphanRemoval: true)]    
     private Collection $reviews;
 
     /**
      * @var Collection<int, Favorites>
      */
-    #[ORM\OneToMany(targetEntity: Favorites::class, mappedBy: 'film')]
+    #[ORM\OneToMany(targetEntity: Favorites::class, mappedBy: 'film', cascade: ['remove'], orphanRemoval: true)]
     private Collection $favorites;
 
     public function __construct()

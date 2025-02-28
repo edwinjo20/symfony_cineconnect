@@ -17,7 +17,7 @@ class Favorites
     private $user;
 
     #[ORM\ManyToOne(targetEntity: Film::class, inversedBy: "favorites")]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     private $film;
 
     public function getId(): ?int
