@@ -4,7 +4,7 @@ pipeline {
     environment {
         GIT_REPO = "https://github.com/edwinjo20/symfony_cineconnect.git"
         GIT_BRANCH = "main"
-        DEPLOY_DIR = "web005"
+        DEPLOY_DIR = "Web005"
     }
 
     stages {
