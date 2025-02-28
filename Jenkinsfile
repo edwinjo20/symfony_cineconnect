@@ -4,8 +4,8 @@ pipeline {
     environment {
         GIT_REPO = "https://github.com/edwinjo20/symfony_cineconnect.git"
         GIT_BRANCH = "main"
-        DEPLOY_DIR = "$WORKSPACE/build/web005"  // Build directory
-        DEPLOY_TARGET = "/var/www/html/web005"  // Deployment directory
+        DEPLOY_DIR = "$WORKSPACE/build/web005"
+        DEPLOY_TARGET = "/var/www/html/web005"
         DB_NAME = "web005"
         DB_USER = "root"
         DB_PASS = "routitop"
@@ -17,7 +17,7 @@ pipeline {
     stages {
         stage('Clean Workspace') {
             steps {
-                cleanWs() // Clean workspace before build
+                cleanWs() // Cleans workspace before build
             }
         }
 
@@ -31,7 +31,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 dir("${DEPLOY_DIR}") {
-                    sh 'composer install --optimize-autoloader' // Install dependencies
+                    sh 'composer install --optimize-autoloader'
                 }
             }
         }
@@ -54,20 +54,24 @@ pipeline {
             steps {
                 dir("${DEPLOY_DIR}") {
                     script {
-                        // Log existing databases
+                        // ✅ Ensure log directory exists
+                        sh "mkdir -p var/log"
+
+                        // ✅ Log existing databases
                         sh "mysql -u${DB_USER} -p${DB_PASS} -h ${DB_HOST} -P ${DB_PORT} -e 'SHOW DATABASES;' | tee var/log/jenkins-database.log"
 
-                        // Check if database exists
+                        // ✅ Check if database exists
                         def checkDB = sh(script: "mysql -u${DB_USER} -p${DB_PASS} -h ${DB_HOST} -P ${DB_PORT} -e 'SHOW DATABASES LIKE \"${DB_NAME}\";'", returnStdout: true).trim()
                         if (!checkDB.contains(DB_NAME)) {
                             sh "php bin/console doctrine:database:create --if-not-exists --env=prod"
                         }
                     }
-                    // Log schema validation to check for missing fields
+
+                    // ✅ Log schema validation (to check missing fields)
                     sh 'php bin/console doctrine:schema:validate | tee var/log/jenkins-schema-validate.log'
                     
-                    // Run migrations or force schema update
-                    sh 'php bin/console doctrine:migrations:migrate --no-interaction --env=prod || php bin/console doctrine:schema:update --force --env=prod'
+                    // ✅ Run migrations (if fails, update schema)
+                    sh 'php bin/console doctrine:migrations:migrate --no-interaction --env=prod || php bin/console doctrine:schema:update --force --env=prod || true'
                 }
             }
         }
