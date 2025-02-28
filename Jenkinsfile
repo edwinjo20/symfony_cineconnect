@@ -45,16 +45,26 @@ pipeline {
             }
         }
 
-        stage('Migration de la base de données') {
+        stage('Correction des erreurs de migration') {
             steps {
                 dir("${DEPLOY_DIR}") {
                     echo "🔄 Vérification et mise à jour de la base de données..."
+
+                    // Vérifier si la colonne existe avant de migrer
                     sh """
                         set -e
                         php bin/console doctrine:migrations:sync-metadata-storage --env=prod
                         php bin/console doctrine:database:create --if-not-exists --env=prod
-                        # Run migration only if necessary
-                        php bin/console doctrine:migrations:migrate --no-interaction --env=prod || echo "⚠️ Aucune nouvelle migration à appliquer."
+                        
+                        # Vérifier si la colonne 'is_blocked' existe déjà
+                        COLUMN_EXISTS=\$(php bin/console doctrine:query:sql "SHOW COLUMNS FROM user LIKE 'is_blocked'" --env=prod | grep is_blocked || echo "")
+
+                        if [ -z "\$COLUMN_EXISTS" ]; then
+                            echo "⚠️ La colonne 'is_blocked' n'existe pas, on applique la migration..."
+                            php bin/console doctrine:migrations:migrate --no-interaction --env=prod
+                        else
+                            echo "✅ La colonne 'is_blocked' existe déjà, migration sautée."
+                        fi
                     """
                 }
             }
@@ -73,11 +83,13 @@ pipeline {
         stage('Déploiement') {
             steps {
                 echo "🚀 Déploiement en cours..."
+                
+                // Supprimer l'utilisation de sudo ou l'exécuter correctement
                 sh """
-                    sudo rm -rf /var/www/html/${DEPLOY_DIR} || true
-                    sudo mkdir -p /var/www/html/${DEPLOY_DIR}
-                    sudo cp -rT ${DEPLOY_DIR} /var/www/html/${DEPLOY_DIR}
-                    sudo chmod -R 775 /var/www/html/${DEPLOY_DIR}/var
+                    rm -rf /var/www/html/${DEPLOY_DIR} || true
+                    mkdir -p /var/www/html/${DEPLOY_DIR}
+                    cp -rT ${DEPLOY_DIR} /var/www/html/${DEPLOY_DIR}
+                    chmod -R 775 /var/www/html/${DEPLOY_DIR}/var
                 """
             }
         }
