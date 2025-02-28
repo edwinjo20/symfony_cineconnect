@@ -58,10 +58,8 @@ pipeline {
                             sh "php bin/console doctrine:database:create --if-not-exists --env=prod"
                         }
                     }
-                    // Ensure migrations exist before applying them
-                    sh 'php bin/console make:migration || true'
-                    // Apply migrations and update schema if needed
-                    sh 'php bin/console doctrine:migrations:migrate --no-interaction --env=prod || php bin/console doctrine:schema:update --force --env=prod'
+                    // Apply migrations safely
+                    sh 'php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --env=prod || php bin/console doctrine:schema:update --force --env=prod'
                 }
             }
         }
@@ -77,11 +75,12 @@ pipeline {
 
         stage('Deployment') {
             steps {
-                sh "rm -rf /var/www/html/${DEPLOY_DIR}" // Remove old deployment
-                sh "mkdir -p /var/www/html/${DEPLOY_DIR}" // Ensure deployment directory exists
-                sh "cp -rT ${DEPLOY_DIR} /var/www/html/${DEPLOY_DIR}" // Copy project files
-                sh "ln -s /var/www/html/${DEPLOY_DIR}/public /var/www/html/${DEPLOY_DIR}/www" // Fix Apache path
-                sh "chmod -R 775 /var/www/html/${DEPLOY_DIR}/var"
+                sh "sudo rm -rf /var/www/html/${DEPLOY_DIR}" // Force remove old deployment
+                sh "sudo mkdir -p /var/www/html/${DEPLOY_DIR}" // Ensure directory exists
+                sh "sudo cp -rT ${DEPLOY_DIR} /var/www/html/${DEPLOY_DIR}" // Copy project files
+                sh "sudo ln -s /var/www/html/${DEPLOY_DIR}/public /var/www/html/${DEPLOY_DIR}/www" // Fix Apache path
+                sh "sudo chown -R www-data:www-data /var/www/html/${DEPLOY_DIR}" // Set proper ownership
+                sh "sudo chmod -R 775 /var/www/html/${DEPLOY_DIR}/var"
             }
         }
     }
