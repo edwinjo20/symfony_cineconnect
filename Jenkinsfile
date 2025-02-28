@@ -5,37 +5,43 @@ pipeline {
         GIT_REPO = "https://github.com/edwinjo20/symfony_cineconnect.git"
         GIT_BRANCH = "main"
         DEPLOY_DIR = "web005"
+        DB_NAME = "web005"
+        DB_USER = "root"
+        DB_PASS = "routitop"
+        DB_HOST = "127.0.0.1"
+        DB_PORT = "3306"
+        SERVER_VERSION = "8.3.0"
     }
 
     stages {
         stage('Clean Workspace') {
             steps {
-                cleanWs() // Clean the Jenkins workspace before starting the build
+                cleanWs() // Cleans the workspace before the build starts
             }
         }
 
-        stage('Cloner le dépôt') {
+        stage('Clone Repository') {
             steps {
-                sh "rm -rf ${DEPLOY_DIR}" // Nettoyage du précédent build
-                sh "git clone -b ${GIT_BRANCH} ${GIT_REPO} ${DEPLOY_DIR}"
+                sh "rm -rf ${DEPLOY_DIR}" // Remove previous build
+                sh "git clone -b ${GIT_BRANCH} ${GIT_REPO} ${DEPLOY_DIR}" // Clone the repository
             }
         }
 
-        stage('Installation des dépendances') {
+        stage('Install Dependencies') {
             steps {
                 dir("${DEPLOY_DIR}") {
-                    sh 'composer install --optimize-autoloader'
+                    sh 'composer install --optimize-autoloader' // Install dependencies
                 }
             }
         }
 
-        stage('Configuration de l\'environnement') {
+        stage('Configure Environment') {
             steps {
                 script {
                     def envLocal = """
                     APP_ENV=prod
-                    APP_DEBUG=1
-                    DATABASE_URL=mysql://root:routitop@127.0.0.1:3306/${DEPLOY_DIR}?serverVersion=8.3.0&charset=utf8mb4
+                    APP_DEBUG=0
+                    DATABASE_URL=mysql://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}?serverVersion=${SERVER_VERSION}&charset=utf8mb4
                     """.stripIndent()
 
                     writeFile file: "${DEPLOY_DIR}/.env.local", text: envLocal
@@ -43,16 +49,24 @@ pipeline {
             }
         }
 
-        stage('Migration de la base de données') {
+        stage('Check Database & Run Migrations') {
             steps {
                 dir("${DEPLOY_DIR}") {
-                    sh 'php bin/console doctrine:database:create --if-not-exists --env=prod'
-                    sh 'php bin/console doctrine:migrations:migrate --no-interaction --env=prod'
+                    script {
+                        def checkDB = sh(script: "mysql -u${DB_USER} -p${DB_PASS} -h ${DB_HOST} -P ${DB_PORT} -e 'SHOW DATABASES LIKE \"${DB_NAME}\";'", returnStdout: true).trim()
+                        if (!checkDB.contains(DB_NAME)) {
+                            sh "php bin/console doctrine:database:create --if-not-exists --env=prod"
+                        }
+                    }
+                    // Ensure migrations exist before applying them
+                    sh 'php bin/console make:migration || true'
+                    // Apply migrations and update schema if needed
+                    sh 'php bin/console doctrine:migrations:migrate --no-interaction --env=prod || php bin/console doctrine:schema:update --force --env=prod'
                 }
             }
         }
 
-        stage('Nettoyage du cache') {
+        stage('Clear & Warmup Cache') {
             steps {
                 dir("${DEPLOY_DIR}") {
                     sh 'php bin/console cache:clear --env=prod'
@@ -61,25 +75,23 @@ pipeline {
             }
         }
 
-            stage('Déploiement') {
-                steps {
-                    sh "rm -rf /var/www/html/${DEPLOY_DIR}" // Remove previous deployment
-                    sh "mkdir -p /var/www/html/${DEPLOY_DIR}" // Ensure directory exists
-                    sh "cp -rT ${DEPLOY_DIR} /var/www/html/${DEPLOY_DIR}" // Copy files
-                    sh "ln -s /var/www/html/${DEPLOY_DIR}/public /var/www/html/${DEPLOY_DIR}/www" // Fix Apache path
-                    sh "chmod -R 775 /var/www/html/${DEPLOY_DIR}/var"
-                }
+        stage('Deployment') {
+            steps {
+                sh "rm -rf /var/www/html/${DEPLOY_DIR}" // Remove old deployment
+                sh "mkdir -p /var/www/html/${DEPLOY_DIR}" // Ensure deployment directory exists
+                sh "cp -rT ${DEPLOY_DIR} /var/www/html/${DEPLOY_DIR}" // Copy project files
+                sh "ln -s /var/www/html/${DEPLOY_DIR}/public /var/www/html/${DEPLOY_DIR}/www" // Fix Apache path
+                sh "chmod -R 775 /var/www/html/${DEPLOY_DIR}/var"
             }
-
-
+        }
     }
 
     post {
         success {
-            echo 'Déploiement réussi !'
+            echo '✅ Deployment Successful!'
         }
         failure {
-            echo 'Erreur lors du déploiement.'
+            echo '❌ Deployment Failed!'
         }
     }
 }
