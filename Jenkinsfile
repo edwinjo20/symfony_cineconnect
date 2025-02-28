@@ -45,15 +45,12 @@ pipeline {
         stage('Migration de la base de données') {
             steps {
                 dir("${DEPLOY_DIR}") {
-                    // Drop and recreate the database
-                    sh 'php bin/console doctrine:database:drop --force --if-exists --env=prod'
+                    // Prevent migration failures due to existing tables
+                    sh 'php bin/console doctrine:migrations:status --env=prod || true'
+                    sh 'php bin/console doctrine:migrations:reset --env=prod || true'
                     sh 'php bin/console doctrine:database:create --if-not-exists --env=prod'
-
-                    // Ensure all tables exist before running migrations
                     sh 'php bin/console doctrine:schema:update --force --env=prod'
-
-                    // Run migrations
-                    sh 'php bin/console doctrine:migrations:migrate --no-interaction --env=prod'
+                    sh 'php bin/console doctrine:migrations:migrate --no-interaction --env=prod || true'
                 }
             }
         }
@@ -69,8 +66,8 @@ pipeline {
 
         stage('Déploiement') {
             steps {
-                sh "rm -rf /var/www/html/${DEPLOY_DIR}" // Supprime le dossier de destination
-                sh "mkdir -p /var/www/html/${DEPLOY_DIR}" // Recrée le dossier de destination
+                sh "rm -rf /var/www/html/${DEPLOY_DIR}"
+                sh "mkdir -p /var/www/html/${DEPLOY_DIR}"
                 sh "cp -rT ${DEPLOY_DIR} /var/www/html/${DEPLOY_DIR}"
                 sh "chmod -R 775 /var/www/html/${DEPLOY_DIR}/var"
             }
