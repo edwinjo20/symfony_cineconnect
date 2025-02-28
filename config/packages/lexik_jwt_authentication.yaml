@@ -1,0 +1,8 @@
+lexik_jwt_authentication:
+    secret_key: '%env(resolve:JWT_SECRET_KEY)%'       # JWT secret key (private key) from environment variable
+    public_key: '%env(resolve:JWT_PUBLIC_KEY)%'       # JWT public key from environment variable
+    pass_phrase: '%env(JWT_PASSPHRASE)%'              # Passphrase for the private key (if set) from environment variable
+    token_ttl: 3600                                   # Token expiration time (in seconds)
+
+    user_id_claim: 'username'                         # The field to use for the JWT subject (e.g., 'username' or 'email')
+

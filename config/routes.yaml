@@ -13,3 +13,12 @@ app_reset_password:
 app_profile:
     path: /profile
     controller: App\Controller\ProfileController::index
+
+api_login:
+    path: /api/login
+    controller: App\Api\AuthController::login
+    methods: POST
+api_comment_index:
+    path: /api/comments
+    controller: App\Api\CommentController::index
+    methods: GET

@@ -31,3 +31,6 @@
 ###> Local Development ###
 docker-compose.override.yml
 ###< Local Development ###
+###> lexik/jwt-authentication-bundle ###
+/config/jwt/*.pem
+###< lexik/jwt-authentication-bundle ###

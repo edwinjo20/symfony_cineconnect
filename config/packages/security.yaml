@@ -10,9 +10,10 @@ security:
 
     firewalls:
         dev:
-            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            pattern: ^/(_(profiler|wdt)|css|images|js)/ # Disable security for these routes
             security: false
 
+        # Firewall for web-based login (CSRF + session-based)
         main:
             lazy: true
             provider: app_user_provider
@@ -20,8 +21,8 @@ security:
                 login_path: app_login
                 check_path: app_login
                 enable_csrf: true
-                default_target_path: app_film_index
                 csrf_token_id: authenticate
+                default_target_path: app_film_index
             logout:
                 path: app_logout
                 target: app_login
@@ -33,7 +34,15 @@ security:
                 - App\Security\LoginFormAuthenticator
             entry_point: App\Security\LoginFormAuthenticator
 
+        # Firewall for API routes using JWT
+        api:
+            pattern: ^/api/
+            provider: app_user_provider
+            stateless: true
+            jwt: ~  # This should be the correct configuration for JWT
+
     access_control:
-        - { path: ^/reset-password, roles: PUBLIC_ACCESS }  # ✅ Fix access issue
-        - { path: ^/admin, roles: ROLE_ADMIN }
-        - { path: ^/profile, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/login, roles: PUBLIC_ACCESS }  # Allow public access to the login route
+        - { path: ^/api, roles: ROLE_USER }  # Require ROLE_USER for all other API routes
+        - { path: ^/api/comments, roles: ROLE_ADMIN }  # Require ROLE_ADMIN for comment routes
+        # - { path: ^/comment, roles: ROLE_USER }  # Require ROLE_USER for comment routes
