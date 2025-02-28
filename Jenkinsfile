@@ -4,7 +4,8 @@ pipeline {
     environment {
         GIT_REPO = "https://github.com/edwinjo20/symfony_cineconnect.git"
         GIT_BRANCH = "main"
-        DEPLOY_DIR = "web005"
+        DEPLOY_DIR = "$WORKSPACE/build/web005"  // Use a separate build directory
+        DEPLOY_TARGET = "/var/www/html/web005"  // Target directory for deployment
         DB_NAME = "web005"
         DB_USER = "root"
         DB_PASS = "routitop"
@@ -58,7 +59,7 @@ pipeline {
                             sh "php bin/console doctrine:database:create --if-not-exists --env=prod"
                         }
                     }
-                    // Update database schema only if needed
+                    // Prevent errors when tables already exist
                     sh 'php bin/console doctrine:schema:update --force --env=prod'
                 }
             }
@@ -75,12 +76,16 @@ pipeline {
 
         stage('Deployment') {
             steps {
-                sh "sudo rm -rf /var/www/html/${DEPLOY_DIR} || true" // Ensure removal of old deployment
-                sh "sudo mkdir -p /var/www/html/${DEPLOY_DIR}" // Ensure directory exists
-                sh "sudo cp -rT ${DEPLOY_DIR} /var/www/html/${DEPLOY_DIR}" // Copy project files
-                sh "sudo ln -s /var/www/html/${DEPLOY_DIR}/public /var/www/html/${DEPLOY_DIR}/www" // Fix Apache path
-                sh "sudo chown -R www-data:www-data /var/www/html/${DEPLOY_DIR}" // Set proper ownership
-                sh "sudo chmod -R 775 /var/www/html/${DEPLOY_DIR}/var"
+                script {
+                    // Ensure the target directory is accessible by Jenkins
+                    sh """
+                    rm -rf ${DEPLOY_TARGET} || true
+                    mkdir -p ${DEPLOY_TARGET}
+                    cp -rT ${DEPLOY_DIR} ${DEPLOY_TARGET}
+                    ln -s ${DEPLOY_TARGET}/public ${DEPLOY_TARGET}/www || true
+                    chmod -R 775 ${DEPLOY_TARGET}/var
+                    """
+                }
             }
         }
     }
