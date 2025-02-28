@@ -80,19 +80,15 @@ pipeline {
             }
         }
 
-        stage('Déploiement') {
-            steps {
-                echo "🚀 Déploiement en cours..."
-                
-                // Supprimer l'utilisation de sudo ou l'exécuter correctement
-                sh """
-                    rm -rf /var/www/html/${DEPLOY_DIR} || true
-                    mkdir -p /var/www/html/${DEPLOY_DIR}
-                    cp -rT ${DEPLOY_DIR} /var/www/html/${DEPLOY_DIR}
-                    chmod -R 775 /var/www/html/${DEPLOY_DIR}/var
-                """
+            stage('Déploiement') {
+                steps {
+                    sh "sudo rm -rf /var/www/html/${DEPLOY_DIR}" // Force remove
+                    sh "sudo mkdir -p /var/www/html/${DEPLOY_DIR}" // Ensure directory exists
+                    sh "sudo cp -rT ${DEPLOY_DIR} /var/www/html/${DEPLOY_DIR}" // Copy files
+                    sh "sudo chmod -R 775 /var/www/html/${DEPLOY_DIR}/var" // Set correct permissions
+                }
             }
-        }
+
     }
 
     post {
