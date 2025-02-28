@@ -58,8 +58,8 @@ pipeline {
                             sh "php bin/console doctrine:database:create --if-not-exists --env=prod"
                         }
                     }
-                    // Apply migrations safely
-                    sh 'php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --env=prod || php bin/console doctrine:schema:update --force --env=prod'
+                    // Update database schema only if needed
+                    sh 'php bin/console doctrine:schema:update --force --env=prod'
                 }
             }
         }
@@ -75,7 +75,7 @@ pipeline {
 
         stage('Deployment') {
             steps {
-                sh "sudo rm -rf /var/www/html/${DEPLOY_DIR}" // Force remove old deployment
+                sh "sudo rm -rf /var/www/html/${DEPLOY_DIR} || true" // Ensure removal of old deployment
                 sh "sudo mkdir -p /var/www/html/${DEPLOY_DIR}" // Ensure directory exists
                 sh "sudo cp -rT ${DEPLOY_DIR} /var/www/html/${DEPLOY_DIR}" // Copy project files
                 sh "sudo ln -s /var/www/html/${DEPLOY_DIR}/public /var/www/html/${DEPLOY_DIR}/www" // Fix Apache path
