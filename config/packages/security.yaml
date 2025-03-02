@@ -13,10 +13,16 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/ 
             security: false
 
+        api:
+            pattern: ^/api/
+            provider: app_user_provider
+            stateless: true
+            jwt: ~
+
         main:
             lazy: true
             provider: app_user_provider
-            user_checker: App\Security\UserChecker  # ✅ Add this line
+            user_checker: App\Security\UserChecker
             form_login:
                 login_path: app_login
                 check_path: app_login
@@ -33,12 +39,6 @@ security:
             custom_authenticators:
                 - App\Security\LoginFormAuthenticator
             entry_point: App\Security\LoginFormAuthenticator
-
-        api:
-            pattern: ^/api/
-            provider: app_user_provider
-            stateless: true
-            jwt: ~
 
     access_control:
         - { path: ^/api/login, roles: PUBLIC_ACCESS }

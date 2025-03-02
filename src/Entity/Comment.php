@@ -1,6 +1,6 @@
 <?php
 namespace App\Entity;
-
+use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity()]
@@ -9,23 +9,32 @@ class Comment
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    #[Groups(['comment:read'])]
+
     private $id;
 
     #[ORM\Column(type: 'text')]
+    #[Groups(['comment:read'])]
+
     private $content;
 
     #[ORM\Column(type: 'datetime')]
+    #[Groups(['comment:read'])]
     private $date;
 
     #[ORM\ManyToOne(targetEntity: Review::class, inversedBy: "comments")]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['comment:read'])]
     private $review;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "comments")]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['comment:read'])]
+
     private $user;
 
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    #[Groups(['comment:read'])]
     private $approved = false;
 
     public function getId(): ?int

@@ -14,11 +14,11 @@ class Review
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['review:read', 'review:write'])]
+    #[Groups(['review:read', 'comment:read'])] 
     private $id;
 
     #[ORM\Column(type: 'text')]
-    #[Groups(['review:read', 'review:write'])]
+    #[Groups(['review:read', 'review:write', 'comment:read'])] 
     #[Assert\NotBlank(message: 'Please enter your review.')]
     private $content;
 

@@ -17,15 +17,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['user:read'])]
+    #[Groups(['user:read', 'comment:read'])] // ✅ Add `comment:read`
     private $id;
 
     #[ORM\Column(type: 'string', length: 180, unique: true)]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['user:read', 'user:write', 'comment:read'])] // ✅ Add `comment:read`
     private $username;
 
     #[ORM\Column(type: 'string', unique: true)]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['user:read', 'user:write', 'comment:read'])] // ✅ Add `comment:read`
     private $email;
 
     #[ORM\Column(type: 'string')]
