@@ -22,3 +22,12 @@ api_comment_index:
     path: /api/comments
     controller: App\Api\CommentController::index
     methods: GET
+api_comment_approve:
+    path: /api/comments/{id}/approve
+    controller: App\Api\CommentController::approveComment
+    methods: POST
+
+api_comment_reject:
+    path: /api/comments/{id}/reject
+    controller: App\Api\CommentController::rejectComment
+    methods: POST

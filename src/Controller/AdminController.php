@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Film;
-use App\Entity\Comment;
 use App\Entity\Genre;
 use App\Entity\User;
 use App\Form\FilmType;
@@ -25,13 +24,11 @@ final class AdminController extends AbstractController
     public function dashboard(EntityManagerInterface $entityManager): Response
     {
         $films = $entityManager->getRepository(Film::class)->findAll();
-        $comments = $entityManager->getRepository(Comment::class)->findBy(['approved' => false]);
         $genres = $entityManager->getRepository(Genre::class)->findAll();
         $users = $entityManager->getRepository(User::class)->findAll(); // Fetch users
 
         return $this->render('admin/dashboard.html.twig', [
             'films' => $films,
-            'comments' => $comments,
             'genres' => $genres,
             'users' => $users, // Pass users to template
         ]);
@@ -114,30 +111,6 @@ final class AdminController extends AbstractController
             $entityManager->remove($film);
             $entityManager->flush();
         }
-        return $this->redirectToRoute('admin_dashboard');
-    }
-
-    /**
-     * ✅ Approve a comment (Admin only)
-     */
-    #[Route('/comment/{id}/approve', name: 'admin_comment_approve', methods: ['POST'])]
-    #[IsGranted('ROLE_ADMIN')]
-    public function approveComment(Comment $comment, EntityManagerInterface $entityManager): Response
-    {
-        $comment->setApproved(true);
-        $entityManager->flush();
-        return $this->redirectToRoute('admin_dashboard');
-    }
-
-    /**
-     * 🗑️ Delete a comment (Admin only)
-     */
-    #[Route('/comment/{id}/delete', name: 'admin_comment_delete', methods: ['POST'])]
-    #[IsGranted('ROLE_ADMIN')]
-    public function deleteComment(Comment $comment, EntityManagerInterface $entityManager): Response
-    {
-        $entityManager->remove($comment);
-        $entityManager->flush();
         return $this->redirectToRoute('admin_dashboard');
     }
 
