@@ -55,14 +55,18 @@ pipeline {
             }
         }
 
-        stage('Déploiement') {
-            steps {
-                sh "rm -rf /var/www/html/${DEPLOY_DIR}" // Supprime le dossier de destination
-                sh "mkdir /var/www/html/${DEPLOY_DIR}" // Recréé le dossier de destination
-                sh "cp -rT ${DEPLOY_DIR} /var/www/html/${DEPLOY_DIR}"
-                sh "chmod -R 775 /var/www/html/${DEPLOY_DIR}/var"
+            stage('Déploiement') {
+                steps {
+                    sh "rm -rf /var/www/html/${DEPLOY_DIR}" // Supprime l'ancien déploiement
+                    sh "mkdir -p /var/www/html/${DEPLOY_DIR}/public/uploads/images" // Assure que le dossier uploads/images existe
+                    sh "cp -rT ${DEPLOY_DIR} /var/www/html/${DEPLOY_DIR}"
+
+                    // Définit les permissions correctes
+                    sh "chown -R www-data:www-data /var/www/html/${DEPLOY_DIR}/public/uploads"
+                    sh "chmod -R 775 /var/www/html/${DEPLOY_DIR}/public/uploads"
+                }
             }
-        }
+
     }
 
     post {
