@@ -1,30 +1,35 @@
-/* Custom styles for navbar */
+/* ======= GENERAL STYLES ======= */
 html, body {
-    overflow: auto; /* Allow scrolling */
+    overflow-x: hidden; /* Prevents horizontal scrolling */
     background: linear-gradient(180deg, #0f172a, #1e3a8a); /* Dark blue gradient */
+    margin: 0;
+    padding: 0;
 }
+
+/* Hide Scrollbars */
 ::-webkit-scrollbar {
     width: 0px;
     height: 0px;
-    display: none; /* Ensures it's hidden */
+    display: none;
 }
 
+/* ======= NAVBAR STYLES ======= */
 .navbar-custom {
-    background: rgba(0, 0, 0, 0.5); /* Darker transparent background */
+    background: rgba(0, 0, 0, 0.5); /* Dark transparent */
     backdrop-filter: blur(5px);
-    position: relative;
     width: 100%;
-    z-index: 10; /* Ensures it sits above other content */
+    z-index: 1000;
     padding: 1rem 3rem;
 }
 
 .navbar-toggler {
     background-color: rgb(169, 169, 146);
 }
-.logo{
+
+.logo {
     margin-top: -7px;
     height: 50px;
-    mix-blend-mode: screen; /* Other options include screen, overlay, etc. */  
+    mix-blend-mode: screen; /* Adjust blend mode if needed */
 }
 
 .navbar-brand, .nav-link, .btn-login, .btn-signup {
@@ -34,57 +39,46 @@ html, body {
     text-decoration: none;
 }
 
-/* Navbar brand hover, focus, and active state */
-.navbar-brand:hover, .navbar-brand:focus, .navbar-brand:active {
-    color: #9EB3C2;
-    background-color: transparent !important;
-    border: none;
-    outline: none;
-}
-
-/* Nav link active state */
+/* Nav links hover effect */
 .nav-link {
-    color: white; /* Default color */
-    text-decoration: none; /* Remove default underline */
-    margin-right: 10px;
+    color: white;
+    margin-right: 20px;
     position: relative;
     cursor: pointer;
+    transition: color 0.3s;
 }
 
-.nav-link.active{
+.nav-link.active {
     color: #9EB3C2;
-    background-color: transparent !important;
-    border: none;
     text-decoration: underline;
 }
+
 .nav-link::after {
     content: "";
     position: absolute;
     left: 0;
-    bottom: -2px; /* Adjusts position below text */
+    bottom: -2px;
     width: 0;
-    height: 2px; /* Sets thickness of underline */
-    background-color: #9EB3C2; /* Sets underline color */
-    transition: width 0.3s ease /* Smooth expand effect */
+    height: 2px;
+    background-color: #9EB3C2;
+    transition: width 0.3s ease;
 }
 
-.nav-link:hover::after, .nav-link.active::after, .nav-link:focus::after {
-    width: 100%; /* Expands the underline on hover, focus, or active */
+.nav-link:hover::after,
+.nav-link.active::after,
+.nav-link:focus::after {
+    width: 100%;
 }
 
+/* Search Bar */
 .search-bar {
-    width: 350px;
+    width: 100%;
+    max-width: 350px;
     background-color: rgba(216, 195, 195, 0.842);
     border-radius: 15px;
     color: white;
     border: 1px solid rgba(255, 255, 255, 0.3);
-    padding: 5px 10px;;
-}
-
-.nav-link {
-    color: white;
-    margin-right: 20px;
-    transition: color 0.3s;
+    padding: 5px 10px;
 }
 
 /* Button styles */
@@ -100,87 +94,123 @@ html, body {
     background-color: #DF645A;
     color: white;
 }
+
 .btn-signup:hover {
     background-color: #E9DEC8;
     color: rgb(0, 0, 0);
 }
+
+/* ======= MOVIE CARD STYLES ======= */
 .movie-card {
-    background-color: #1e293b; /* Dark navy background */
+    background-color: #1e293b;
     border-radius: 15px;
     overflow: hidden;
     transition: transform 0.3s ease-in-out;
-}
-.card-text {
-    color: #9EB3C2;
-}
-.movie-card:hover {
-    transform: translateY(-15px);
+    width: 100%;
+    max-width: 280px; /* Prevents shrinking too much */
+    margin: auto;
 }
 
+.movie-card:hover {
+    transform: translateY(-10px);
+}
+
+/* Movie Images */
 .movie-card img {
     width: 100%;
-    height: 200px;
-    object-fit: cover;
+    height: 220px; /* Ensures consistent size */
+    object-fit: cover; /* Prevents distortion */
     border-top-left-radius: 15px;
     border-top-right-radius: 15px;
 }
 
+/* Card Body */
 .card-body {
-    padding: 20px;
+    padding: 15px;
 }
 
+/* Star Ratings */
 .rating i {
     font-size: 16px;
 }
 
-.cards {
-    background-color: #1e293b;
-    color: white;
-    border-radius: 15px;
-}
-
+/* Tables */
 .tables th, .table td {
     color: white;
 }
 
+/* Hover effect on tables */
 .tables-hover tbody tr:hover {
     background-color: rgba(255, 255, 255, 0.1);
 }
-/* Fix movie card size on small screens */
-@media (max-width: 576px) {
+
+/* ======= CAROUSEL IMAGE FIXES ======= */
+.carousel img {
+    width: 100%;
+    height: 250px; /* Prevents distortion */
+    object-fit: cover;
+}
+
+/* ======= RESPONSIVE GRID FIXES ======= */
+@media (max-width: 768px) {
+    .movie-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px; /* Adds spacing */
+    }
+    
     .movie-card {
-        width: 100%;
-        max-width: 160px; /* Ensures proper scaling */
-        margin: 0 auto; /* Centers the cards */
+        flex: 1 1 calc(50% - 15px); /* Two cards per row */
+        max-width: 240px;
     }
+    
     .movie-card img {
-        height: 180px; /* Ensures proportional scaling */
+        height: 200px;
     }
+
     .card-body {
-        padding: 10px; /* Reduces padding to fit content better */
+        padding: 12px;
     }
 }
-@media (max-width: 768px) {
+
+/* ======= SMALL SCREEN (IPHONE) FIXES ======= */
+@media (max-width: 576px) {
+    .movie-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px; /* Adds spacing */
+    }
+
+    .movie-card {
+        flex: 1 1 calc(50% - 10px); /* Two cards per row */
+        max-width: 220px;
+    }
+
+    .movie-card img {
+        height: 180px;
+    }
+    
+    .search-bar {
+        width: 100%; /* Full width search bar */
+        max-width: 250px;
+    }
+
     .carousel img {
-        height: auto;
-        max-height: 250px; /* Prevents too large banners */
-        object-fit: cover;
+        height: 200px;
     }
 }
-@media (max-width: 768px) {
-    .navbar-custom {
-        padding: 10px 20px; /* Reduces padding to avoid excessive space */
-    }
-}
-/* Position the filter dropdown at the top-right of the last movie in the first row */
+
+/* ======= FIX FILTER DROPDOWN POSITION ======= */
 .filter-icon-container {
     position: absolute;
-    top: -40px; /* Adjust this for better alignment */
-    right: 10px; /* Align to the right */
+    top: -40px; /* Adjust position */
+    right: 10px;
     z-index: 10;
 }
 
-/* Style for filter dropdown */
+/* Dropdown Styling */
 .filter-dropdown {
     background-color: rgba(255, 255, 255, 0.2);
     color: white;
@@ -191,13 +221,12 @@ html, body {
     cursor: pointer;
 }
 
-/* Ensure dropdown is always visible */
 .filter-dropdown:focus {
     outline: none;
     border-color: #ff9800;
 }
 
-/* Adjust for mobile */
+/* Adjust Filter Position for Mobile */
 @media (max-width: 992px) {
     .filter-icon-container {
         top: -35px;
