@@ -44,3 +44,5 @@ security:
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api, roles: ROLE_USER }
         - { path: ^/api/comments, roles: ROLE_ADMIN }
+        - { path: ^/reset-password, roles: PUBLIC_ACCESS } # Ou IS_AUTHENTICATED_ANONYMOUSLY
+
