@@ -6,13 +6,29 @@
 <div class="container mt-5">
     <h1 class="text-center mb-4 text-light">Film Page</h1>
 
-<div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4">
+    <!-- Genre Filter -->
+    <form method="GET" action="{{ path('app_film_index') }}" class="mb-4">
+        <div class="row justify-content-center">
+            <div class="col-md-4">
+                <select class="form-select" onchange="location = this.value;">
+                    <option value="{{ path('app_film_index') }}" {% if not selectedGenreId %}selected{% endif %}>All Genres</option>
+                    {% for genre in genres %}
+                        <option value="{{ path('app_film_index', {'genre': genre.id}) }}" {% if genre.id == selectedGenreId %}selected{% endif %}>
+                            {{ genre.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+            </div>
+        </div>
+    </form>
+
+    <!-- Film Grid -->
+    <div class="row row-cols-2 row-cols-lg-4 g-3">
         {% for film in films %}
             <div class="col">
                 <div class="card movie-card shadow-lg">
-                    <img src="{{ asset('uploads/images/' ~ film.imagePath) }}" 
-                         class="card-img-top" 
-                         alt="{{ film.title }}">
+                    <img src="{{ asset('uploads/images/' ~ film.imagePath) }}" class="card-img-top" alt="{{ film.title }}">
 
                     <div class="card-body text-center">
                         <h5 class="card-title text-light">{{ film.title }}</h5>

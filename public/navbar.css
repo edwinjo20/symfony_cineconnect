@@ -146,3 +146,61 @@ html, body {
 .tables-hover tbody tr:hover {
     background-color: rgba(255, 255, 255, 0.1);
 }
+/* Fix movie card size on small screens */
+@media (max-width: 576px) {
+    .movie-card {
+        width: 100%;
+        max-width: 160px; /* Ensures proper scaling */
+        margin: 0 auto; /* Centers the cards */
+    }
+    .movie-card img {
+        height: 180px; /* Ensures proportional scaling */
+    }
+    .card-body {
+        padding: 10px; /* Reduces padding to fit content better */
+    }
+}
+@media (max-width: 768px) {
+    .carousel img {
+        height: auto;
+        max-height: 250px; /* Prevents too large banners */
+        object-fit: cover;
+    }
+}
+@media (max-width: 768px) {
+    .navbar-custom {
+        padding: 10px 20px; /* Reduces padding to avoid excessive space */
+    }
+}
+/* Position the filter dropdown at the top-right of the last movie in the first row */
+.filter-icon-container {
+    position: absolute;
+    top: -40px; /* Adjust this for better alignment */
+    right: 10px; /* Align to the right */
+    z-index: 10;
+}
+
+/* Style for filter dropdown */
+.filter-dropdown {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 15px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Ensure dropdown is always visible */
+.filter-dropdown:focus {
+    outline: none;
+    border-color: #ff9800;
+}
+
+/* Adjust for mobile */
+@media (max-width: 992px) {
+    .filter-icon-container {
+        top: -35px;
+        right: 5px;
+    }
+}

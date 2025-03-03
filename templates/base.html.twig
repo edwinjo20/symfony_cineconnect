@@ -25,12 +25,14 @@
             <a class="navbar-brand d-flex align-items-center" routerLink="/">
                 CINECONNECT
             </a>
+                <!-- Search Bar -->
+                <form class="d-flex ms-4" method="GET" action="{{ path('app_film_index') }}">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input class="form-control me-1 search-bar" type="search" name="search" placeholder="Search for a film..." aria-label="Search" value="{{ searchQuery ?? '' }}">
+                    <button class="btn rounded-5" style="background: transparent; color: white;" type="submit"><i class="fas fa-search"></i></button>
+                </form>
 
-            <!-- Search Bar -->
-            <form class="d-flex ms-4">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input class="form-control me-1 search-bar" type="search" placeholder="Search" aria-label="Search">
-            </form>
+
 
             <!-- Toggle button for mobile view -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">

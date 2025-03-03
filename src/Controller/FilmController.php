@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Controller;
-
+use App\Repository\GenreRepository;
 use App\Entity\Film;
 use App\Entity\Review;
 use App\Form\ReviewType;
@@ -26,13 +26,28 @@ final class FilmController extends AbstractController
      * 📌 Display all films
      */
     #[Route('/', name: 'app_film_index', methods: ['GET'])]
-    public function index(): Response
+    public function index(Request $request, GenreRepository $genreRepository): Response
     {
+        $selectedGenreId = $request->query->get('genre');
+        $searchQuery = $request->query->get('search', ''); // Capture search input
+    
+        if (!empty($searchQuery)) {
+            $films = $this->filmService->searchFilms($searchQuery);
+        } elseif (!empty($selectedGenreId)) {
+            $films = $this->filmService->getFilmsByGenre((int)$selectedGenreId);
+        } else {
+            $films = $this->filmService->getAllFilms();
+        }
+    
         return $this->render('film/index.html.twig', [
-            'films' => $this->filmService->getAllFilms()
+            'films' => $films,
+            'genres' => $genreRepository->findAll(),
+            'selectedGenreId' => $selectedGenreId,
+            'searchQuery' => $searchQuery
         ]);
     }
-
+    
+    
     /**
      * 📌 Show film details and allow reviews & comments
      */

@@ -66,4 +66,33 @@ class FilmService
 
         return null; // No error
     }
+    public function getFilmsByGenre(?int $genreId): array
+    {
+        if (!$genreId) {
+            return $this->getAllFilms(); // If no genre, return all films
+        }
+    
+        return $this->entityManager->getRepository(Film::class)->createQueryBuilder('f')
+            ->where('f.genre = :genreId')
+            ->setParameter('genreId', $genreId)
+            ->getQuery()
+            ->getResult();
+    }
+    
+    
+    public function searchFilms(string $query): array
+    {
+        $query = trim($query);
+        if (empty($query)) {
+            return $this->getAllFilms(); // Return all films if no search query
+        }
+    
+        return $this->entityManager->getRepository(Film::class)->createQueryBuilder('f')
+            ->where('LOWER(f.title) LIKE LOWER(:query)')
+            ->setParameter('query', '%' . $query . '%')
+            ->getQuery()
+            ->getResult();
+    }
+    
+    
 }
