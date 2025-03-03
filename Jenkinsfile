@@ -55,17 +55,17 @@ pipeline {
             }
         }
 
-            stage('Déploiement') {
-                steps {
-                    sh "rm -rf /var/www/html/${DEPLOY_DIR}" // Supprime l'ancien déploiement
-                    sh "mkdir -p /var/www/html/${DEPLOY_DIR}/public/uploads/images" // Assure que le dossier uploads/images existe
-                    sh "cp -rT ${DEPLOY_DIR} /var/www/html/${DEPLOY_DIR}"
+        stage('Déploiement') {
+            steps {
+                sh "rm -rf /var/www/html/${DEPLOY_DIR}" // Supprime l'ancien déploiement
+                sh "mkdir -p /var/www/html/${DEPLOY_DIR}/public/uploads/images" // Assure que le dossier uploads/images existe
+                sh "cp -rT ${DEPLOY_DIR} /var/www/html/${DEPLOY_DIR}"
 
-                    // Définit les permissions correctes
-                    sh "chown -R www-data:www-data /var/www/html/${DEPLOY_DIR}/public/uploads"
-                    sh "chmod -R 775 /var/www/html/${DEPLOY_DIR}/public/uploads"
-                }
+                // Assurez-vous que Jenkins peut écrire dans uploads sans chown
+                sh "chmod -R 777 /var/www/html/${DEPLOY_DIR}/public/uploads"
             }
+        }
+
 
     }
 
