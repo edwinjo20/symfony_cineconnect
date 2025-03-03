@@ -29,7 +29,7 @@ html, body {
 .logo {
     margin-top: -7px;
     height: 50px;
-    mix-blend-mode: screen; /* Adjust blend mode if needed */
+    mix-blend-mode: screen;
 }
 
 .navbar-brand, .nav-link, .btn-login, .btn-signup {
@@ -70,7 +70,7 @@ html, body {
     width: 100%;
 }
 
-/* Search Bar */
+/* ======= SEARCH BAR ======= */
 .search-bar {
     width: 100%;
     max-width: 350px;
@@ -81,7 +81,7 @@ html, body {
     padding: 5px 10px;
 }
 
-/* Button styles */
+/* ======= BUTTON STYLES ======= */
 .btn-login, .btn-signup {
     padding: 5px 15px;
     color: rgb(9, 20, 47);
@@ -107,8 +107,10 @@ html, body {
     overflow: hidden;
     transition: transform 0.3s ease-in-out;
     width: 100%;
-    max-width: 280px; /* Prevents shrinking too much */
+    max-width: 320px; /* Increased size for better visibility */
     margin: auto;
+    display: flex;
+    flex-direction: column;
 }
 
 .movie-card:hover {
@@ -118,8 +120,8 @@ html, body {
 /* Movie Images */
 .movie-card img {
     width: 100%;
-    height: 220px; /* Ensures consistent size */
-    object-fit: cover; /* Prevents distortion */
+    height: 250px;
+    object-fit: cover;
     border-top-left-radius: 15px;
     border-top-right-radius: 15px;
 }
@@ -127,6 +129,10 @@ html, body {
 /* Card Body */
 .card-body {
     padding: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-align: center;
 }
 
 /* Star Ratings */
@@ -147,26 +153,34 @@ html, body {
 /* ======= CAROUSEL IMAGE FIXES ======= */
 .carousel img {
     width: 100%;
-    height: 250px; /* Prevents distortion */
+    height: 500px; /* Ensures consistent height */
     object-fit: cover;
 }
 
 /* ======= RESPONSIVE GRID FIXES ======= */
+@media (max-width: 992px) {
+    /* Fix grid layout for tablets */
+    .row-cols-md-3 > .col {
+        flex: 1 1 50%; /* 2 movies per row */
+    }
+}
+
 @media (max-width: 768px) {
+    /* Fix movie card alignment */
     .movie-container {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
-        gap: 15px; /* Adds spacing */
+        gap: 15px;
     }
     
     .movie-card {
-        flex: 1 1 calc(50% - 15px); /* Two cards per row */
-        max-width: 240px;
+        flex: 1 1 80%; /* Larger movie cards on smaller screens */
+        max-width: 100%;
     }
-    
+
     .movie-card img {
-        height: 200px;
+        height: auto;
     }
 
     .card-body {
@@ -176,36 +190,38 @@ html, body {
 
 /* ======= SMALL SCREEN (IPHONE) FIXES ======= */
 @media (max-width: 576px) {
+    /* 🟢 Remove Carousel on Mobile */
+    #homeCarousel {
+        display: none !important;
+    }
+
+    /* 🟢 Make movie cards full-width on small screens */
     .movie-container {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
-        gap: 10px; /* Adds spacing */
+        gap: 10px;
     }
 
     .movie-card {
-        flex: 1 1 calc(50% - 10px); /* Two cards per row */
-        max-width: 220px;
+        flex: 1 1 100%;
+        max-width: 100%;
     }
 
     .movie-card img {
-        height: 180px;
-    }
-    
-    .search-bar {
-        width: 100%; /* Full width search bar */
-        max-width: 250px;
+        height: auto;
     }
 
-    .carousel img {
-        height: 200px;
+    .search-bar {
+        width: 100%;
+        max-width: 100%;
     }
 }
 
 /* ======= FIX FILTER DROPDOWN POSITION ======= */
 .filter-icon-container {
     position: absolute;
-    top: -40px; /* Adjust position */
+    top: -40px;
     right: 10px;
     z-index: 10;
 }
