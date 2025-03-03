@@ -1,12 +1,13 @@
-/* Custom styles for navbar */
+/* ======= GENERAL STYLES ======= */
 html, body {
     overflow-x: hidden !important;
     background: linear-gradient(180deg, #0f172a, #1e3a8a); /* Dark blue gradient */
 }
+
+/* ======= NAVBAR STYLES ======= */
 .navbar-custom {
     background: rgba(0, 0, 0, 0.5); /* Darker transparent background */
     backdrop-filter: blur(5px);
-    position: relative;
     width: 100%;
     z-index: 10; /* Ensures it sits above other content */
     padding: 1rem 3rem;
@@ -15,12 +16,14 @@ html, body {
 .navbar-toggler {
     background-color: rgb(169, 169, 146);
 }
-.logo{
+
+.logo {
     margin-top: -7px;
     height: 50px;
-    mix-blend-mode: screen; /* Other options include screen, overlay, etc. */  
+    mix-blend-mode: screen;  
 }
 
+/* Navbar Brand & Links */
 .navbar-brand, .nav-link, .btn-login, .btn-signup {
     color: white;
     font-family: 'Poppins', sans-serif;
@@ -28,85 +31,50 @@ html, body {
     text-decoration: none;
 }
 
-/* Navbar brand hover, focus, and active state */
-.navbar-brand:hover, .navbar-brand:focus, .navbar-brand:active {
+.nav-link.active {
     color: #9EB3C2;
-    background-color: transparent !important;
-    border: none;
-    outline: none;
-}
-
-/* Nav link active state */
-.nav-link {
-    color: white; /* Default color */
-    text-decoration: none; /* Remove default underline */
-    margin-right: 10px;
-    position: relative;
-    cursor: pointer;
-}
-
-.nav-link.active{
-    color: #9EB3C2;
-    background-color: transparent !important;
-    border: none;
     text-decoration: underline;
 }
+
 .nav-link::after {
     content: "";
     position: absolute;
     left: 0;
-    bottom: -2px; /* Adjusts position below text */
+    bottom: -2px;
     width: 0;
-    height: 2px; /* Sets thickness of underline */
-    background-color: #9EB3C2; /* Sets underline color */
-    transition: width 0.3s ease /* Smooth expand effect */
+    height: 2px;
+    background-color: #9EB3C2;
+    transition: width 0.3s ease;
 }
 
-.nav-link:hover::after, .nav-link.active::after, .nav-link:focus::after {
-    width: 100%; /* Expands the underline on hover, focus, or active */
+.nav-link:hover::after, 
+.nav-link.active::after, 
+.nav-link:focus::after {
+    width: 100%;
 }
 
+/* Search Bar */
 .search-bar {
     width: 350px;
     background-color: rgba(216, 195, 195, 0.842);
     border-radius: 15px;
     color: white;
     border: 1px solid rgba(255, 255, 255, 0.3);
-    padding: 5px 10px;;
+    padding: 5px 10px;
 }
 
-.nav-link {
-    color: white;
-    margin-right: 20px;
-    transition: color 0.3s;
-}
-
-/* Button styles */
-.btn-login, .btn-signup {
-    padding: 5px 15px;
-    color: rgb(9, 20, 47);
-    background-color: rgba(197, 198, 201, 0.6);
-    border: none;
-    transition: background-color 0.3s;
-}
-
-.btn-login:hover {
-    background-color: #DF645A;
-    color: white;
-}
-.btn-signup:hover {
-    background-color: #E9DEC8;
-    color: rgb(0, 0, 0);
-}
+/* ======= MOVIE CARD STYLES ======= */
 .movie-card {
     background-color: #1e293b; /* Dark navy background */
     border-radius: 15px;
     overflow: hidden;
     transition: transform 0.3s ease-in-out;
 }
+
 .card-text {
     color: #9EB3C2;
 }
+
 .movie-card:hover {
     transform: translateY(-10px);
 }
@@ -126,19 +94,77 @@ html, body {
     font-size: 16px;
 }
 
-.cards {
-    background-color: #1e293b;
+/* ======= LOGIN & REGISTRATION FORM STYLES ======= */
+.card {
+    border-radius: 12px;
+    background: #1e293b; /* Match site theme */
     color: white;
-    border-radius: 15px;
+    padding: 30px; /* Increased padding */
 }
 
-.tables th, .table td {
-    color: white;
+.card h2 {
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
 }
 
-.tables-hover tbody tr:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+.form-control {
+    font-size: 18px; /* Increased text size */
+    padding: 14px;
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: #000;
 }
-.container {
-    overflow-x: visible !important;
+
+.btn-primary {
+    font-size: 20px;
+    padding: 14px;
+    border-radius: 8px;
+    font-weight: bold;
+    background-color: #DF645A;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #c23f3f;
+}
+
+.form-check-input {
+    transform: scale(1.2); /* Bigger checkbox */
+}
+
+/* ======= MOBILE RESPONSIVENESS ======= */
+@media (max-width: 768px) {
+    /* Increase width for login/register form */
+    .container {
+        margin-top: 30px !important;
+    }
+
+    .row.justify-content-center {
+        display: flex;
+        justify-content: center;
+    }
+
+    .col-md-6 {
+        width: 90%; /* Make forms bigger */
+    }
+
+    .card {
+        width: 100%;
+        padding: 20px;
+    }
+
+    .form-control {
+        font-size: 18px; /* Bigger input fields for mobile */
+        padding: 14px;
+    }
+
+    .btn-primary {
+        font-size: 20px;
+        padding: 14px;
+    }
+
+    .text-center a {
+        font-size: 16px;
+    }
 }
