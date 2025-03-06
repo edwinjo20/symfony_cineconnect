@@ -76,22 +76,43 @@ class RegistrationController extends AbstractController
             'registrationForm' => $form->createView(),
         ]);
     }
-    
-    
     #[Route('/verify/email', name: 'app_verify_email')]
-    public function verifyUserEmail(Request $request, TranslatorInterface $translator): Response
+    public function verifyUserEmail(Request $request, TranslatorInterface $translator, EntityManagerInterface $entityManager): Response
     {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-
+        // ✅ Fetch User ID from the URL
+        $userId = $request->query->get('id'); 
+    
+        if (!$userId) {
+            $this->addFlash('error', 'Invalid verification link.');
+            return $this->redirectToRoute('app_register');
+        }
+    
+        // ✅ Find User in the Database
+        $user = $entityManager->getRepository(User::class)->find($userId);
+    
+        if (!$user) {
+            $this->addFlash('error', 'User not found.');
+            return $this->redirectToRoute('app_register');
+        }
+    
         try {
-            $user = $this->getUser();
+            // ✅ Validate the Email Confirmation
             $this->emailVerifier->handleEmailConfirmation($request, $user);
         } catch (VerifyEmailExceptionInterface $exception) {
             $this->addFlash('verify_email_error', $translator->trans($exception->getReason(), [], 'VerifyEmailBundle'));
             return $this->redirectToRoute('app_register');
         }
-
-        $this->addFlash('success', 'Your email address has been verified.');
-        return $this->redirectToRoute('app_film_index');
+    
+        // ✅ Update `is_verified` and Persist Changes
+        $user->setIsVerified(true);
+        $entityManager->persist($user);
+        $entityManager->flush();
+    
+        error_log("✅ [SUCCESS] User ID: {$user->getId()} email verified and updated in DB.");
+    
+        $this->addFlash('success', 'Your email has been verified. You can now log in.');
+        return $this->redirectToRoute('app_login');
     }
+    
+    
 }

@@ -9,12 +9,24 @@
             <div class="card shadow-lg p-5">
                 <h2 class="text-center mb-4">Login</h2>
 
-                {% if error %}
-                    <div class="alert alert-danger">
-                        {{ error.messageKey|trans(error.messageData, 'security') }}
-                        {% if error.messageKey == 'Invalid CSRF token.' %}
-                            <br>Please refresh the page and try again.
-                        {% endif %}
+                    {% for label, messages in app.flashes %}
+                        <div class="alert alert-{{ label }}">
+                            {% for message in messages %}
+                                <p>{{ message }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+
+                    {% if error %}
+                        <div class="alert alert-danger">
+                            {{ error.messageKey|trans(error.messageData, 'security') }}
+                        </div>
+                    {% endif %}
+
+
+                {% if app.user and not app.user.isVerified %}
+                    <div class="alert alert-warning">
+                        Please verify your email address before logging in. Check your inbox for the confirmation email.
                     </div>
                 {% endif %}
 

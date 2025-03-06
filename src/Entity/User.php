@@ -41,13 +41,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private bool $isVerified = false;
 
-    #[ORM\OneToMany(targetEntity: Review::class, mappedBy: "user", orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Review::class, mappedBy: "user", cascade: ['remove'], orphanRemoval: true)]
     private Collection $reviews;
 
-    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: "user", orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: "user", cascade: ['remove'], orphanRemoval: true)]
     private Collection $comments;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Favorites::class)]
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Favorites::class),]
     private Collection $favorites;
 
     public function __construct()

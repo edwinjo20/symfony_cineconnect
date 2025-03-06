@@ -1,12 +1,15 @@
 <?php
 
 namespace App\Controller;
+
 use App\Repository\GenreRepository;
 use App\Entity\Film;
 use App\Entity\Review;
 use App\Form\ReviewType;
 use App\Form\CommentType;
 use App\Service\FilmService;
+use App\Service\ReviewService;
+use App\Service\CommentService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,10 +19,14 @@ use Symfony\Component\Routing\Annotation\Route;
 final class FilmController extends AbstractController
 {
     private FilmService $filmService;
+    private ReviewService $reviewService;
+    private CommentService $commentService;
 
-    public function __construct(FilmService $filmService)
+    public function __construct(FilmService $filmService, ReviewService $reviewService, CommentService $commentService)
     {
         $this->filmService = $filmService;
+        $this->reviewService = $reviewService;
+        $this->commentService = $commentService;
     }
 
     /**
@@ -29,8 +36,8 @@ final class FilmController extends AbstractController
     public function index(Request $request, GenreRepository $genreRepository): Response
     {
         $selectedGenreId = $request->query->get('genre');
-        $searchQuery = $request->query->get('search', ''); // Capture search input
-    
+        $searchQuery = $request->query->get('search', '');
+
         if (!empty($searchQuery)) {
             $films = $this->filmService->searchFilms($searchQuery);
         } elseif (!empty($selectedGenreId)) {
@@ -38,7 +45,7 @@ final class FilmController extends AbstractController
         } else {
             $films = $this->filmService->getAllFilms();
         }
-    
+
         return $this->render('film/index.html.twig', [
             'films' => $films,
             'genres' => $genreRepository->findAll(),
@@ -46,8 +53,7 @@ final class FilmController extends AbstractController
             'searchQuery' => $searchQuery
         ]);
     }
-    
-    
+
     /**
      * 📌 Show film details and allow reviews & comments
      */
@@ -55,11 +61,12 @@ final class FilmController extends AbstractController
     public function show(Film $film, Request $request): Response
     {
         // ✅ Handle review form
-        $reviewForm = $this->createForm(ReviewType::class, new Review());
+        $review = new Review();
+        $reviewForm = $this->createForm(ReviewType::class, $review);
         $reviewForm->handleRequest($request);
 
         if ($reviewForm->isSubmitted() && $reviewForm->isValid()) {
-            $this->filmService->handleReviewSubmission($reviewForm->getData(), $film);
+            $this->reviewService->handleReviewSubmission($review, $film);
             return $this->redirectToRoute('app_film_show', ['id' => $film->getId()]);
         }
 
@@ -71,7 +78,7 @@ final class FilmController extends AbstractController
 
         // ✅ Handle comment submission
         if ($request->isMethod('POST') && $request->request->has('review_id')) {
-            $error = $this->filmService->handleCommentSubmission(
+            $error = $this->commentService->handleCommentSubmission(
                 $request->request->get('content'),
                 (int) $request->request->get('review_id')
             );
@@ -81,7 +88,7 @@ final class FilmController extends AbstractController
             } else {
                 $this->addFlash('success', 'Comment submitted for approval.');
             }
-            
+
             return $this->redirectToRoute('app_film_show', ['id' => $film->getId()]);
         }
 
