@@ -91,6 +91,34 @@ html, body {
     padding: 8px 12px;
     font-size: 18px;
 }
+.search-icon {
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    transition: color 0.3s ease-in-out;
+}
+
+.search-icon:hover {
+    color: #9EB3C2;
+}
+.search-form {
+    display: none;
+    opacity: 0;
+    max-width: 0;
+    overflow: hidden;
+    transition: max-width 0.5s ease, opacity 0.5s ease;
+}
+.search-form.active {
+    display: flex;
+    opacity: 1;
+    max-width: 300px; /* Adjust width as needed */
+}
+.search-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: white;
+}
 
 /* ======= BUTTON STYLES ======= */
 .btn-login, .btn-signup {
@@ -262,79 +290,22 @@ html, body {
 .social-icon:hover {
     color: #9EB3C2;
 }
-/* ======= MOBILE FIXES ======= */
+/* ======= MOBILE RESPONSIVE FIXES ======= */
 @media (max-width: 768px) {
-    .row {
-        display: flex;
-        flex-direction: column; /* Stack items vertically */
-        align-items: center;
+    .search-form {
+        display: flex; /* Ensure it remains in the DOM */
+        justify-content: center;
+        position: absolute;
+        top: 55px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%; /* Make it fit mobile screens */
+        background: rgba(0, 0, 0, 0.8);
+        padding: 10px;
+        border-radius: 10px;
     }
-
-    .movie-card {
-        width: 100%; /* Full width */
-        max-width: 400px; /* Prevents excessive width */
-        margin: auto;
-    }
-
-    .movie-card img {
-        height: auto;
-    }
-
-    .card-body {
-        padding: 14px;
-    }
-}
-
-
-/* ======= SMALL SCREEN (IPHONE) FIXES ======= */
-@media (max-width: 576px) {
-    /* 🟢 Remove Carousel on Mobile */
-    #homeCarousel {
-        display: none !important;
-    }
-
-    /* 🟢 Bigger Movie Cards */
-    .movie-card {
-        flex: 1 1 100%;
-        max-width: 100%;
-    }
-
-    /* 🟢 Fix Form Scaling */
-    .auth-card {
-        max-width: 90%;
-        padding: 25px;
-    }
-
+    
     .search-bar {
-        font-size: 20px;
+        width: 100%;
     }
-
-    .btn-primary {
-        font-size: 22px;
-        padding: 16px;
-    }
-}
-
-/* ======= FIX FILTER DROPDOWN POSITION ======= */
-.filter-icon-container {
-    position: absolute;
-    top: -40px;
-    right: 10px;
-    z-index: 10;
-}
-
-/* Dropdown Styling */
-.filter-dropdown {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    padding: 10px 18px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.filter-dropdown:focus {
-    outline: none;
-    border-color: #ff9800;
 }

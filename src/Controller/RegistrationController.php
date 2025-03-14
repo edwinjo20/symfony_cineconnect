@@ -52,7 +52,7 @@ class RegistrationController extends AbstractController
             );
     
             // Assign roles (Admin if email matches)
-            $adminEmails = ['edwinjones.m@gmail.com', 'edwinjones.m1980@gmail.com'];
+            $adminEmails = ['edwinjones.ms@gmail.com', 'edwinjones.m1980@gmail.com'];
             $user->setRoles(in_array($userEmail, $adminEmails, true) ? ['ROLE_ADMIN'] : ['ROLE_USER']);
     
             // Persist user
