@@ -40,16 +40,7 @@ pipeline {
         stage('Migration de la base de données') {
             steps {
                 dir("${DEPLOY_DIR}") {
-                    // Drop old database (Fix conflicts)
-                    sh 'php bin/console doctrine:database:drop --force --env=prod || true'
-
-                    // Create fresh database
                     sh 'php bin/console doctrine:database:create --if-not-exists --env=prod'
-
-                    // Ensure schema is up to date
-                    sh 'php bin/console doctrine:schema:update --force --env=prod'
-
-                    // Apply migrations
                     sh 'php bin/console doctrine:migrations:migrate --no-interaction --env=prod'
                 }
             }
@@ -74,6 +65,8 @@ pipeline {
                 sh "chmod -R 777 /var/www/html/${DEPLOY_DIR}/public/uploads"
             }
         }
+
+
     }
 
     post {
