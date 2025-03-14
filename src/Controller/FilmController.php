@@ -29,9 +29,7 @@ final class FilmController extends AbstractController
         $this->commentService = $commentService;
     }
 
-    /**
-     * 📌 Display all films
-     */
+
     #[Route('/', name: 'app_film_index', methods: ['GET'])]
     public function index(Request $request, GenreRepository $genreRepository): Response
     {
@@ -54,49 +52,51 @@ final class FilmController extends AbstractController
         ]);
     }
 
-    /**
-     * 📌 Show film details and allow reviews & comments
-     */
     #[Route('/{id}', name: 'app_film_show', methods: ['GET', 'POST'])]
     public function show(Film $film, Request $request): Response
     {
-        // ✅ Handle review form
         $review = new Review();
         $reviewForm = $this->createForm(ReviewType::class, $review);
         $reviewForm->handleRequest($request);
-
+    
         if ($reviewForm->isSubmitted() && $reviewForm->isValid()) {
             $this->reviewService->handleReviewSubmission($review, $film);
             return $this->redirectToRoute('app_film_show', ['id' => $film->getId()]);
         }
-
-        // ✅ Prepare comment forms
+    
         $commentForms = [];
-        foreach ($film->getReviews() as $review) {
-            $commentForms[$review->getId()] = $this->createForm(CommentType::class)->createView();
+        foreach ($film->getReviews() as $userReview) { 
+            $commentForms[$userReview->getId()] = $this->createForm(CommentType::class)->createView();
         }
-
-        // ✅ Handle comment submission
+    
         if ($request->isMethod('POST') && $request->request->has('review_id')) {
+            $reviewId = (int) $request->request->get('review_id');
+            $review = $this->reviewService->findReviewById($reviewId);
+        
+            if (!$review) {
+                throw $this->createNotFoundException('Review not found.');
+            }
+        
             $error = $this->commentService->handleCommentSubmission(
                 $request->request->get('content'),
-                (int) $request->request->get('review_id')
+                $review
             );
-
+        
             if ($error) {
                 $this->addFlash('error', $error);
             } else {
                 $this->addFlash('success', 'Comment submitted for approval.');
             }
-
+        
             return $this->redirectToRoute('app_film_show', ['id' => $film->getId()]);
         }
-
+    
         return $this->render('film/show.html.twig', [
             'film' => $film,
             'reviews' => $film->getReviews(),
-            'commentForms' => $commentForms,
             'reviewForm' => $reviewForm->createView(),
+            'commentForms' => $commentForms,
         ]);
     }
+    
 }

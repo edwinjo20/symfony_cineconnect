@@ -36,12 +36,12 @@ class Review
     private $publicationDate;
 
     // ✅ Corrected Film relationship with CASCADE DELETE
-    #[ORM\ManyToOne(targetEntity: Film::class, inversedBy: 'reviews')]
+    #[ORM\ManyToOne(targetEntity: Film::class, inversedBy: 'reviews', cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     private $film;
     
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "reviews")]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "reviews", cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     #[Groups(['review:read', 'review:write'])]
     private ?User $user = null;

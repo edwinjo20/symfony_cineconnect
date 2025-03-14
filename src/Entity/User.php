@@ -21,11 +21,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $id;
 
     #[ORM\Column(type: 'string', length: 180, unique: true)]
-    #[Groups(['user:read', 'user:write', 'comment:read'])] // ✅ Add `comment:read`
+    #[Groups(['user:read', 'user:write', 'comment:read'])]
     private $username;
 
     #[ORM\Column(type: 'string', unique: true)]
-    #[Groups(['user:read', 'user:write', 'comment:read'])] // ✅ Add `comment:read`
+    #[Groups(['user:read', 'user:write', 'comment:read'])]
     private $email;
 
     #[ORM\Column(type: 'string')]

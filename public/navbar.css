@@ -41,6 +41,12 @@ html, body {
     text-decoration: none;
 }
 
+.navbar-brand:hover,
+.navbar-brand:focus {
+    color: #9EB3C2; /* Keeps the text color */
+}
+
+
 /* Nav links hover effect */
 .nav-link {
     color: white;
@@ -50,10 +56,12 @@ html, body {
     transition: color 0.3s;
 }
 
-.nav-link.active {
-    color: #9EB3C2;
-    text-decoration: underline;
+
+.nav-link:hover,
+.nav-link:focus {
+    color: #9EB3C2; /* Keeps the text color */
 }
+
 
 .nav-link::after {
     content: "";
@@ -208,20 +216,64 @@ html, body {
 .auth-card .btn-primary:hover {
     background-color: #c23f3f;
 }
+/* ======= FOOTER STYLES ======= */
+.footer-custom {
+    background: #061731; /* Dark blue background */
+    padding: 15px 40px; /* Adds spacing */
+    width: 100%;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative; /* Keeps footer at bottom */
+    bottom: 0;
+    left: 0;
+}
 
+/* Left Side - Logo & Text */
+.footer-brand {
+    display: flex;
+    align-items: center;
+}
+
+.footer-logo {
+    height: 35px;
+}
+
+.footer-text {
+    font-size: 22px;
+    font-weight: bold;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Right Side - Social Icons */
+.social-icons {
+    display: flex;
+    gap: 15px; /* Space between icons */
+}
+
+.social-icon {
+    color: white;
+    font-size: 24px;
+    text-decoration: none;
+    transition: color 0.3s ease-in-out;
+}
+
+.social-icon:hover {
+    color: #9EB3C2;
+}
 /* ======= MOBILE FIXES ======= */
 @media (max-width: 768px) {
-    
-    .movie-container {
+    .row {
         display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 20px;
+        flex-direction: column; /* Stack items vertically */
+        align-items: center;
     }
-    
+
     .movie-card {
-        flex: 1 1 90%;
-        max-width: 100%;
+        width: 100%; /* Full width */
+        max-width: 400px; /* Prevents excessive width */
+        margin: auto;
     }
 
     .movie-card img {
@@ -231,21 +283,8 @@ html, body {
     .card-body {
         padding: 14px;
     }
-
-    /* 🟢 Increase Zoom on Mobile */
-    html {
-        font-size: 18px;
-    }
-
-    .search-bar {
-        font-size: 20px;
-    }
-
-    .btn-login, .btn-signup {
-        font-size: 20px;
-        padding: 12px 22px;
-    }
 }
+
 
 /* ======= SMALL SCREEN (IPHONE) FIXES ======= */
 @media (max-width: 576px) {

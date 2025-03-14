@@ -1,143 +1,113 @@
-<?php 
-
+<?php
 namespace App\Tests\Controller;
 
 use App\Entity\Review;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\EntityRepository;
-use App\Entity\Film;
 use App\Entity\User;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use App\Entity\Film;
+use App\Entity\Genre;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Doctrine\ORM\EntityManagerInterface;
 
-final class ReviewControllerTest extends WebTestCase {
-    private KernelBrowser $client;
-    private EntityManagerInterface $manager;
-    private EntityRepository $reviewRepository;
-    private string $path = '/review/';
+class ReviewControllerTest extends WebTestCase
+{
+    private $client;
+    private $entityManager;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         $this->client = static::createClient();
-        $this->manager = static::getContainer()->get('doctrine')->getManager();
-        $this->reviewRepository = $this->manager->getRepository(Review::class);
-
-        // Clean up database
-        foreach ($this->reviewRepository->findAll() as $object) {
-            $this->manager->remove($object);
-        }
-        $this->manager->flush();
+        $this->entityManager = static::getContainer()->get(EntityManagerInterface::class); // Corrected line
     }
 
-    public function testIndex(): void {
-        $this->client->followRedirects();
-        $crawler = $this->client->request('GET', $this->path);
-
-        self::assertResponseStatusCodeSame(200);
-        self::assertPageTitleContains('Review index');
-    }
-
-    public function testNew(): void {
-        $this->markTestIncomplete();
-        $this->client->request('GET', sprintf('%snew', $this->path));
-
-        self::assertResponseStatusCodeSame(200);
-
-        $this->client->submitForm('Save', [
-            'review[content]' => 'Testing',
-            'review[ratingGiven]' => 5,
-            'review[publicationDate]' => (new \DateTime())->format('Y-m-d'),
-            'review[film]' => 1,
-            'review[user]' => 1,
-        ]);
-
-        self::assertResponseRedirects($this->path);
-
-        $reviews = $this->reviewRepository->findAll();
-        self::assertCount(1, $reviews);
-        self::assertInstanceOf(Review::class, $reviews[0]);
-    }
-
-    public function testShow(): void {
-        $this->markTestIncomplete();
-
-        // Create a new review
-        $fixture = new Review();
-        $fixture->setContent('My Title');
-        $fixture->setRatingGiven(5);
-        $fixture->setPublicationDate(new \DateTime('now'));
-        $fixture->setFilm($this->manager->getRepository(Film::class)->find(1));
-        $fixture->setUser($this->manager->getRepository(User::class)->find(1));
-
-        $this->manager->persist($fixture);
-        $this->manager->flush();
-
-        $this->client->request('GET', sprintf('%s%s', $this->path, $fixture->getId()));
-
-        self::assertResponseStatusCodeSame(200);
-        self::assertPageTitleContains('Review');
-    }
-
-    public function testEdit(): void {
-        $this->markTestIncomplete();
-
-        // Create and persist a review
-        $fixture = new Review();
-        $fixture->setContent('Value');
-        $fixture->setRatingGiven(5);
-        $fixture->setPublicationDate(new \DateTime('now'));
-        $fixture->setFilm($this->manager->getRepository(Film::class)->find(1));
-        $fixture->setUser($this->manager->getRepository(User::class)->find(1));
-
-        $this->manager->persist($fixture);
-        $this->manager->flush();
-
-        $this->client->request('GET', sprintf('%s%s/edit', $this->path, $fixture->getId()));
-
-        $this->client->submitForm('Update', [
-            'review[content]' => 'Something New',
-            'review[ratingGiven]' => 10,  // Assuming max rating is 10
-            'review[publicationDate]' => (new \DateTime())->format('Y-m-d'),
-            'review[film]' => 1,
-            'review[user]' => 1,
-        ]);
-
-        self::assertResponseRedirects($this->path);
-
-        // Retrieve updated entity
-        $updatedFixture = $this->reviewRepository->findAll();
-        self::assertNotEmpty($updatedFixture, 'No review found after edit');
-        self::assertInstanceOf(Review::class, $updatedFixture[0]);
-                
-        // Assertions to validate modifications
-        /** @var Review $review */
-        $review = $updatedFixture[0];
-
-        self::assertSame('Something New', $review->getContent());
-        self::assertSame(10, $review->getRatingGiven());
-        self::assertInstanceOf(\DateTime::class, $review->getPublicationDate());
-        self::assertInstanceOf(Film::class, $review->getFilm());
-        self::assertInstanceOf(User::class, $review->getUser());
+    public function testCreateReview()
+    {
+        // Create a user and log them in
+        $user = $this->createTestUser();
+        $film = $this->createTestFilm();
         
+        // Add test genre if not exists
+        $genre = $this->createTestGenre(); 
+    
+        // Log in as the test user
+        $this->client->loginUser($user);
+    
+        // Request the 'new review' page
+        $crawler = $this->client->request('GET', "/review/new/{$film->getId()}");
+    
+        // Ensure the page is loaded and contains the form
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorExists('form');
+    
+        // Get the CSRF token (if required)
+        $token = $crawler->filter('input[name="review[_token]"]')->attr('value');
+    
+        // Submit the form
+        $form = $crawler->selectButton('Save')->form([
+            'review[content]' => 'Amazing movie!',
+            'review[ratingGiven]' => 5,
+            'review[_token]' => $token, // Add CSRF token
+        ]);
+    
+        // Submit the form
+        $this->client->submit($form);
+    
+        // Assert that we are redirected to the correct film page
+        $this->assertResponseRedirects("/film/{$film->getId()}");
+    
+        // Verify in the database that the review has been created
+        $review = $this->entityManager->getRepository(Review::class)->findOneBy(['content' => 'Amazing movie!']);
+        $this->assertNotNull($review);
+        $this->assertEquals(5, $review->getRatingGiven());
+    }
+    
+    private function createTestUser(): User
+    {
+        $existingUser = $this->entityManager->getRepository(User::class)->findOneBy(['username' => 'testuser']);
+        if ($existingUser) {
+            $this->entityManager->remove($existingUser);
+            $this->entityManager->flush();
+        }
+    
+        $user = new User();
+        $user->setUsername('testuser')
+             ->setEmail('testuser@example.com')
+             ->setPassword('password123');
+    
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+    
+        return $user;
+    }
+    
+
+    private function createTestFilm(): Film
+    {
+        $film = new Film();
+        $film->setTitle('Test Film')
+            ->setDescription('A test movie description')
+            ->setReleaseDate(new \DateTime())
+            ->setGenre($this->createTestGenre());
+
+        $this->entityManager->persist($film);
+        $this->entityManager->flush();
+
+        return $film;
     }
 
-    public function testRemove(): void {
-        $this->markTestIncomplete();
-
-        // Create and persist a review
-        $fixture = new Review();
-        $fixture->setContent('Value');
-        $fixture->setRatingGiven(5);
-        $fixture->setPublicationDate(new \DateTime('now'));
-        $fixture->setFilm($this->manager->getRepository(Film::class)->find(1));
-        $fixture->setUser($this->manager->getRepository(User::class)->find(1));
-
-        $this->manager->persist($fixture);
-        $this->manager->flush();
-
-        $this->client->request('GET', sprintf('%s%s', $this->path, $fixture->getId()));
-        $this->client->submitForm('Delete');
-
-        self::assertResponseRedirects($this->path);
-        self::assertSame(0, $this->reviewRepository->count([]));
+    private function createTestGenre(): Genre
+    {
+        $genreName = 'Action';
+    
+        // Check if the genre already exists in the database
+        $genre = $this->entityManager->getRepository(Genre::class)->findOneBy(['name' => $genreName]);
+    
+        if (!$genre) {
+            $genre = new Genre();
+            $genre->setName($genreName);
+            $this->entityManager->persist($genre);
+            $this->entityManager->flush();
+        }
+    
+        return $genre;
     }
 }

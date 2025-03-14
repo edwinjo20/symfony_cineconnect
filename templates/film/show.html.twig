@@ -88,7 +88,7 @@
                             <form action="{{ path('app_film_show', {'id': film.id}) }}" method="POST">
                                 <input type="hidden" name="review_id" value="{{ review.id }}">
                                 <textarea name="content" class="form-control mb-2" rows="2" required></textarea>
-                                <button type="submit" class="btn btn-success btn-sm w-100">Submit Comment</button>
+                                    <button type="submit" class="btn btn-primary w-100">Submit Review</button>
                             </form>
                         </div>
                     {% endif %}

@@ -35,5 +35,7 @@
         </tbody>
     </table>
 
-    <a href="{{ path('app_review_new') }}">Create new</a>
+{% for film in films %}
+    <a href="{{ path('app_review_new', {'filmId': film.id}) }}">Create new review for {{ film.title }}</a>
+{% endfor %}
 {% endblock %}

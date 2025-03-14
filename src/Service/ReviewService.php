@@ -14,7 +14,7 @@ class ReviewService
     public function __construct(EntityManagerInterface $entityManager, Security $security)
     {
         $this->entityManager = $entityManager;
-        $this->security = $security; // ✅ FIX: Initialize $security
+        $this->security = $security;
     }
 
     /**
@@ -26,11 +26,19 @@ class ReviewService
     }
 
     /**
+     * Find a review by its ID
+     */
+    public function findReviewById(int $reviewId): ?Review
+    {
+        return $this->entityManager->getRepository(Review::class)->find($reviewId);
+    }
+
+    /**
      * Handle review submission
      */
     public function handleReviewSubmission(Review $review, Film $film): void
     {
-        $review->setUser($this->security->getUser()); // ✅ FIX: $this->security now exists
+        $review->setUser($this->security->getUser());
         $review->setFilm($film);
         $review->setPublicationDate(new \DateTime());
 

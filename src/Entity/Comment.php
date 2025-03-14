@@ -22,12 +22,12 @@ class Comment
     #[Groups(['comment:read'])]
     private $date;
 
-    #[ORM\ManyToOne(targetEntity: Review::class, inversedBy: "comments")]
+    #[ORM\ManyToOne(targetEntity: Review::class, inversedBy: "comments", cascade: ["persist"])]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['comment:read'])]
     private $review;
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "comments")]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'comments', cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['comment:read'])]
 

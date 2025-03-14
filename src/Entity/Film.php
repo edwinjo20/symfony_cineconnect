@@ -31,7 +31,7 @@ class Film
     #[Groups(['film:read', 'film:write'])]
     private $releaseDate;
 
-    #[ORM\ManyToOne(targetEntity: Genre::class, inversedBy: "films")]
+    #[ORM\ManyToOne(targetEntity: Genre::class, inversedBy: 'films', cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false)]
     private ?Genre $genre = null;
     

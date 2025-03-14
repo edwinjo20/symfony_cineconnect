@@ -24,40 +24,40 @@
     </form>
 
     <!-- Film Grid -->
-    <div class="row row-cols-2 row-cols-lg-4 g-3">
-        {% for film in films %}
-            <div class="col">
-                <div class="card movie-card shadow-lg">
-                    <img src="{{ asset('uploads/images/' ~ film.imagePath) }}" class="card-img-top" alt="{{ film.title }}">
+<div class="row g-3">
+    {% for film in films %}
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+            <div class="card movie-card shadow-lg">
+                <img src="{{ asset('uploads/images/' ~ film.imagePath) }}" class="card-img-top" alt="{{ film.title }}">
 
-                    <div class="card-body text-center">
-                        <h5 class="card-title text-light">{{ film.title }}</h5>
-                        <p class="card-text text-light">{{ film.genre.name }}</p>
+                <div class="card-body text-center">
+                    <h5 class="card-title text-light">{{ film.title }}</h5>
+                    <p class="card-text text-light">{{ film.genre.name }}</p>
 
-
-                        <!-- ⭐ Star Rating -->
-                        <div class="rating mb-2">
-                            {% set avgRating = film.getAverageRating() %}
-                            {% for i in 1..5 %}
-                                {% if i <= avgRating %}
-                                    <i class="fas fa-star text-warning"></i>
-                                {% elseif i - 0.5 <= avgRating %}
-                                    <i class="fas fa-star-half-alt text-warning"></i>
-                                {% else %}
-                                    <i class="far fa-star text-warning"></i>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-
-                        <a href="{{ path('app_film_show', {'id': film.id}) }}" class="btn btn-dark rounded-pill px-4">More</a>
+                    <!-- ⭐ Star Rating -->
+                    <div class="rating mb-2">
+                        {% set avgRating = film.getAverageRating() %}
+                        {% for i in 1..5 %}
+                            {% if i <= avgRating %}
+                                <i class="fas fa-star text-warning"></i>
+                            {% elseif i - 0.5 <= avgRating %}
+                                <i class="fas fa-star-half-alt text-warning"></i>
+                            {% else %}
+                                <i class="far fa-star text-warning"></i>
+                            {% endif %}
+                        {% endfor %}
                     </div>
+
+                    <a href="{{ path('app_film_show', {'id': film.id}) }}" class="btn btn-dark rounded-pill px-4">More</a>
                 </div>
             </div>
-        {% else %}
-            <div class="col">
-                <p class="text-center text-light">No films found</p>
-            </div>
-        {% endfor %}
-    </div>
+        </div>
+    {% else %}
+        <div class="col">
+            <p class="text-center text-light">No films found</p>
+        </div>
+    {% endfor %}
+</div>
+
 </div>
 {% endblock %}

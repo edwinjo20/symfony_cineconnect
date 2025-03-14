@@ -1,136 +1,80 @@
 <?php
-
 namespace App\Tests\Controller;
 
+use App\Entity\Comment;
 use App\Entity\Film;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\EntityRepository;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\Response;
 
-final class FilmControllerTest extends WebTestCase{
-    private KernelBrowser $client;
-    private EntityManagerInterface $manager;
-    private EntityRepository $filmRepository;
-    private string $path = '/film/';
+class FilmControllerTest extends WebTestCase
+{
+    private $client;
+    private $entityManager;
+    private $user;
+    private $film;
 
     protected function setUp(): void
     {
         $this->client = static::createClient();
-        $this->manager = static::getContainer()->get('doctrine')->getManager();
-        $this->filmRepository = $this->manager->getRepository(Film::class);
+        $this->entityManager = static::getContainer()->get('doctrine')->getManager();
 
-        foreach ($this->filmRepository->findAll() as $object) {
-            $this->manager->remove($object);
+        // Create test data: User and Film
+        $this->user = $this->createTestUser();
+        $this->film = $this->createTestFilm();
+    }
+
+    // Test the Comment Creation in FilmController
+    public function testCreateComment()
+    {
+        $this->client->loginUser($this->user);
+
+        // POST request to create a comment for a film
+        $this->client->request('POST', '/film/' . $this->film->getId(), [
+            'review_id' => 1,  // Example review ID, ensure this is valid
+            'content' => 'Amazing film!',
+        ]);
+
+        // Assert the response is successful (200 OK)
+        $this->assertResponseStatusCodeSame(Response::HTTP_OK);
+
+        // Verify comment was created in the database
+        $comment = $this->entityManager->getRepository(Comment::class)->findOneBy(['content' => 'Amazing film!']);
+        $this->assertNotNull($comment);
+        $this->assertEquals('Amazing film!', $comment->getContent());
+    }
+
+    // Helper method to create a test user
+    private function createTestUser(): User
+    {
+        // Remove existing user if already present
+        $existingUser = $this->entityManager->getRepository(User::class)->findOneBy(['username' => 'testuser']);
+        
+        if ($existingUser) {
+            $this->entityManager->remove($existingUser);
+            $this->entityManager->flush();
         }
-
-        $this->manager->flush();
+    
+        // Now create a new user
+        $user = new User();
+        $user->setUsername('testuser')
+             ->setEmail('testuser@example.com')
+             ->setPassword('password123');
+        
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+        
+        return $user;
     }
 
-    public function testIndex(): void
+    // Helper method to create a test film
+    private function createTestFilm(): Film
     {
-        $this->client->followRedirects();
-        $crawler = $this->client->request('GET', $this->path);
-
-        self::assertResponseStatusCodeSame(200);
-        self::assertPageTitleContains('Film index');
-
-        // Use the $crawler to perform additional assertions e.g.
-        // self::assertSame('Some text on the page', $crawler->filter('.p')->first());
-    }
-
-    public function testNew(): void
-    {
-        $this->markTestIncomplete();
-        $this->client->request('GET', sprintf('%snew', $this->path));
-
-        self::assertResponseStatusCodeSame(200);
-
-        $this->client->submitForm('Save', [
-            'film[title]' => 'Testing',
-            'film[description]' => 'Testing',
-            'film[releaseDate]' => 'Testing',
-            'film[imagePath]' => 'Testing',
-            'film[genre]' => 'Testing',
-        ]);
-
-        self::assertResponseRedirects($this->path);
-
-        self::assertSame(1, $this->filmRepository->count([]));
-    }
-
-    public function testShow(): void
-    {
-        $this->markTestIncomplete();
-        $fixture = new Film();
-        $fixture->setTitle('My Title');
-        $fixture->setDescription('My Title');
-        $fixture->setReleaseDate(new \DateTime('2023-01-01'));
-        $fixture->setImagePath('My Title');
-        $fixture->setGenre(null); // Replace with an actual Genre object if needed
-
-        $this->manager->persist($fixture);
-        $this->manager->flush();
-
-        $this->client->request('GET', sprintf('%s%s', $this->path, $fixture->getId()));
-
-        self::assertResponseStatusCodeSame(200);
-        self::assertPageTitleContains('Film');
-
-        // Use assertions to check that the properties are properly displayed.
-    }
-
-    public function testEdit(): void
-    {
-        $this->markTestIncomplete();
-        $fixture = new Film();
-        $fixture->setTitle('Value');
-        $fixture->setDescription('Value');
-        $fixture->setReleaseDate(new \DateTime('2023-01-01'));
-        $fixture->setImagePath('Value');
-        $fixture->setGenre(null); // Replace with an actual Genre object if needed
-
-        $this->manager->persist($fixture);
-        $this->manager->flush();
-
-        $this->client->request('GET', sprintf('%s%s/edit', $this->path, $fixture->getId()));
-
-        $this->client->submitForm('Update', [
-            'film[title]' => 'Something New',
-            'film[description]' => 'Something New',
-            'film[releaseDate]' => 'Something New',
-            'film[imagePath]' => 'Something New',
-            'film[genre]' => 'Something New',
-        ]);
-
-        self::assertResponseRedirects('/film/');
-
-        $fixture = $this->filmRepository->findAll();
-
-        self::assertSame('Something New', $fixture[0]->getTitle());
-        self::assertSame('Something New', $fixture[0]->getDescription());
-        self::assertSame('Something New', $fixture[0]->getReleaseDate());
-        self::assertSame('Something New', $fixture[0]->getImagePath());
-        self::assertSame('Something New', $fixture[0]->getGenre());
-    }
-
-    public function testRemove(): void
-    {
-        $this->markTestIncomplete();
-        $fixture = new Film();
-        $fixture->setTitle('Value');
-        $fixture->setDescription('Value');
-        $fixture->setReleaseDate(new \DateTime('2023-01-01'));
-        $fixture->setImagePath('Value');
-        $fixture->setGenre(null); // Replace with an actual Genre object if needed
-
-        $this->manager->persist($fixture);
-        $this->manager->flush();
-
-        $this->client->request('GET', sprintf('%s%s', $this->path, $fixture->getId()));
-        $this->client->submitForm('Delete');
-
-        self::assertResponseRedirects('/film/');
-        self::assertSame(0, $this->filmRepository->count([]));
+        $film = new Film();
+        $film->setTitle('Test Film');
+        $film->setDescription('A test film description');
+        $this->entityManager->persist($film);
+        $this->entityManager->flush();
+        return $film;
     }
 }
